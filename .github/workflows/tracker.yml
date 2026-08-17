@@ -39,4 +39,4 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           git diff --staged --quiet || git commit -m "Tägliches Dashboard-Update durch KI-Tracker"
-          git push
+          git push origin HEAD:main
