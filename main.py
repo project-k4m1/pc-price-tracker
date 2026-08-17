@@ -98,7 +98,7 @@ def run_claude_decision(briefing, rate, main_total, alt_total):
     """
     
     message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+        model="claude-sonnet-5",  # <--- HIER IST DAS NEUE 2026er MODELL!
         max_tokens=350,
         messages=[{"role": "user", "content": prompt}]
     )
@@ -167,7 +167,7 @@ def generate_html_dashboard(rate, briefing, decision, main_total, alt_total, his
             <div class="focus-badge">🎯 Optmiert für Ableton 12, Revopoint 3D & Raytracing</div>
             <p><strong>Markt-Briefing (Gemini):</strong> {briefing}</p>
             <div class="ai-box">
-                <strong>Experten-Empfehlung (Claude 3.5 Sonnet):</strong><br><br>{decision.replace(chr(10), '<br>')}
+                <strong>Experten-Empfehlung (Claude Sonnet 5):</strong><br><br>{decision.replace(chr(10), '<br>')}
             </div>
         </div>
         
