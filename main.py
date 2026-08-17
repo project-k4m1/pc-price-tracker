@@ -74,7 +74,6 @@ def run_gemini_researcher(rate, headlines):
     client = genai.Client(api_key=GEMINI_API_KEY)
     prompt = f"Analysiere kurz (max. 3 Sätze auf Deutsch) die Marktlage für PC-Komponenten:\n- EUR/USD: {rate}\n- News: {headlines}"
     
-    # HIER IST DAS UPDATE AUF GEMINI 3.6 FLASH
     response = client.models.generate_content(
         model="gemini-3.6-flash",
         contents=prompt
@@ -99,7 +98,7 @@ def run_claude_decision(briefing, rate, main_total, alt_total):
     """
     
     message = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+        model="claude-3-5-sonnet-latest",  # <--- HIER IST DER ZEITLOSE ALIAS!
         max_tokens=350,
         messages=[{"role": "user", "content": prompt}]
     )
