@@ -11,13 +11,13 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 
-# Hardware-Matrix: Main-Build vs. Preis-Leistungs-Sieger
+# Hardware-Matrix: Main-Build (Wunsch-Setup) vs. Preis-Leistungs-Sieger Build
 HARDWARE_DATA = {
     "main_build": {
         "name": "High-End Main-Build (Wunsch-Setup)",
         "items": [
             {
-                "id": "gpu",
+                "id": "m_gpu",
                 "part": "Grafikkarte",
                 "model": "MSI GeForce RTX 5070 Ti Gaming Trio OC",
                 "price": 1248.99,
@@ -25,13 +25,12 @@ HARDWARE_DATA = {
                 "url": "https://www.notebooksbilliger.de",
                 "img": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80",
                 "alts": [
-                    {"model": "MSI RTX 5070 Ti Ventus 3X (Preis-Tipp)", "price": 1149.00, "shop": "Idealo", "url": "https://www.idealo.de"},
-                    {"model": "NVIDIA GeForce RTX 4080 SUPER 16GB", "price": 1050.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"},
-                    {"model": "AMD Radeon RX 7900 XTX 24GB (VRAM-Monster)", "price": 980.00, "shop": "Alternate", "url": "https://www.alternate.de"}
+                    {"model": "MSI RTX 5070 Ti Ventus 3X", "price": 1149.00, "shop": "Idealo", "url": "https://www.idealo.de"},
+                    {"model": "NVIDIA GeForce RTX 4080 SUPER 16GB", "price": 1050.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"}
                 ]
             },
             {
-                "id": "cpu_ram",
+                "id": "m_cpu_ram",
                 "part": "CPU & RAM Bundle",
                 "model": "AMD Ryzen 9 9950X3D + 48GB DDR5-6000",
                 "price": 1095.00,
@@ -39,13 +38,12 @@ HARDWARE_DATA = {
                 "url": "https://www.caseking.de",
                 "img": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80",
                 "alts": [
-                    {"model": "AMD Ryzen 7 7800X3D + 48GB DDR5 (Gaming-King)", "price": 580.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"},
-                    {"model": "Intel Core i9-14900K + 64GB DDR5 (Workstation)", "price": 890.00, "shop": "Caseking", "url": "https://www.caseking.de"},
-                    {"model": "AMD Ryzen 9 7900X + 48GB DDR5 (Preis-Leistung)", "price": 480.00, "shop": "Notebooksbilliger", "url": "https://www.notebooksbilliger.de"}
+                    {"model": "AMD Ryzen 7 7800X3D + 48GB DDR5", "price": 580.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"},
+                    {"model": "Intel Core i9-14900K + 64GB DDR5", "price": 890.00, "shop": "Caseking", "url": "https://www.caseking.de"}
                 ]
             },
             {
-                "id": "mb",
+                "id": "m_mb",
                 "part": "Mainboard",
                 "model": "MSI MAG X870E TOMAHAWK WIFI",
                 "price": 284.36,
@@ -54,11 +52,11 @@ HARDWARE_DATA = {
                 "img": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80",
                 "alts": [
                     {"model": "Gigabyte X870 AORUS ELITE WIFI7", "price": 295.00, "shop": "Alternate", "url": "https://www.alternate.de"},
-                    {"model": "MSI B650 Tomahawk WiFi (Preis-Tipp)", "price": 180.00, "shop": "Idealo", "url": "https://www.idealo.de"}
+                    {"model": "MSI B650 Tomahawk WiFi", "price": 180.00, "shop": "Idealo", "url": "https://www.idealo.de"}
                 ]
             },
             {
-                "id": "ssd",
+                "id": "m_ssd",
                 "part": "SSD Storage",
                 "model": "Samsung 990 PRO SSD 1TB",
                 "price": 219.00,
@@ -66,12 +64,12 @@ HARDWARE_DATA = {
                 "url": "https://www.notebooksbilliger.de",
                 "img": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=120&auto=format&fit=crop&q=80",
                 "alts": [
-                    {"model": "WD_BLACK SN850X 2TB (Mehr Speicher)", "price": 185.00, "shop": "Idealo", "url": "https://www.idealo.de"},
-                    {"model": "Lexar NM790 2TB NVMe (Preis-Tipp)", "price": 140.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"}
+                    {"model": "WD_BLACK SN850X 2TB", "price": 185.00, "shop": "Idealo", "url": "https://www.idealo.de"},
+                    {"model": "Lexar NM790 2TB NVMe", "price": 140.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"}
                 ]
             },
             {
-                "id": "case_cool",
+                "id": "m_case_cool",
                 "part": "Gehäuse & Kühlung",
                 "model": "Lian Li O11 Vision + NZXT Kraken Elite 360",
                 "price": 549.00,
@@ -80,7 +78,7 @@ HARDWARE_DATA = {
                 "img": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80",
                 "alts": [
                     {"model": "Fractal Design Torrent + Corsair H150i", "price": 430.00, "shop": "Alternate", "url": "https://www.alternate.de"},
-                    {"model": "Fractal North XL + Standard 360 AIO (Preis-Tipp)", "price": 380.00, "shop": "Idealo", "url": "https://www.idealo.de"}
+                    {"model": "Fractal North XL + Standard 360 AIO", "price": 380.00, "shop": "Idealo", "url": "https://www.idealo.de"}
                 ]
             }
         ]
@@ -88,11 +86,66 @@ HARDWARE_DATA = {
     "alt_build": {
         "name": "Preis-Leistungs-Sieger Build",
         "items": [
-            {"part": "Grafikkarte", "model": "MSI GeForce RTX 5070 Ti Ventus 3X", "price": 1149.00, "shop": "Idealo"},
-            {"part": "Prozessor", "model": "AMD Ryzen 9 7900X", "price": 315.00, "shop": "Mindfactory"},
-            {"part": "Arbeitsspeicher", "model": "Crucial Pro 48GB DDR5-5600", "price": 165.00, "shop": "Mindfactory"},
-            {"part": "Mainboard & SSD", "model": "MSI B650 Tomahawk + 1TB Lexar SSD", "price": 280.00, "shop": "Mindfactory"},
-            {"part": "Gehäuse & Kühlung", "model": "Fractal North XL + Standard AIO", "price": 420.00, "shop": "Idealo"}
+            {
+                "id": "a_gpu",
+                "part": "Grafikkarte",
+                "model": "MSI GeForce RTX 5070 Ti Ventus 3X",
+                "price": 1149.00,
+                "shop": "Idealo",
+                "url": "https://www.idealo.de",
+                "img": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80",
+                "alts": [
+                    {"model": "NVIDIA GeForce RTX 4070 Ti SUPER 16GB", "price": 820.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"}
+                ]
+            },
+            {
+                "id": "a_cpu",
+                "part": "Prozessor",
+                "model": "AMD Ryzen 9 7900X",
+                "price": 315.00,
+                "shop": "Mindfactory",
+                "url": "https://www.mindfactory.de",
+                "img": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80",
+                "alts": [
+                    {"model": "AMD Ryzen 7 7800X3D", "price": 390.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"}
+                ]
+            },
+            {
+                "id": "a_ram",
+                "part": "Arbeitsspeicher",
+                "model": "Crucial Pro 48GB DDR5-5600",
+                "price": 165.00,
+                "shop": "Mindfactory",
+                "url": "https://www.mindfactory.de",
+                "img": "https://images.unsplash.com/photo-1562976540-1e02c414c18f?w=120&auto=format&fit=crop&q=80",
+                "alts": [
+                    {"model": "Corsair Vengeance 64GB DDR5-6000", "price": 210.00, "shop": "Caseking", "url": "https://www.caseking.de"}
+                ]
+            },
+            {
+                "id": "a_mb_ssd",
+                "part": "Mainboard & SSD",
+                "model": "MSI B650 Tomahawk + 1TB Lexar SSD",
+                "price": 280.00,
+                "shop": "Mindfactory",
+                "url": "https://www.mindfactory.de",
+                "img": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=120&auto=format&fit=crop&q=80",
+                "alts": [
+                    {"model": "ASUS TUF Gaming B650 + 2TB Lexar", "price": 320.00, "shop": "Alternate", "url": "https://www.alternate.de"}
+                ]
+            },
+            {
+                "id": "a_case_cool",
+                "part": "Gehäuse & Kühlung",
+                "model": "Fractal North XL + Standard AIO",
+                "price": 420.00,
+                "shop": "Idealo",
+                "url": "https://www.idealo.de",
+                "img": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80",
+                "alts": [
+                    {"model": "be quiet! Shadow Base 800 + Pure Loop", "price": 280.00, "shop": "Mindfactory", "url": "https://www.mindfactory.de"}
+                ]
+            }
         ]
     }
 }
@@ -190,20 +243,21 @@ def manage_history(main_total, alt_total):
         except Exception:
             pass
             
-    if len(history) < 12:
-        months = ["Aug 25", "Sep 25", "Okt 25", "Nov 25", "Dez 25", "Jan 26", "Feb 26", "Mär 26", "Apr 26", "Mai 26", "Jun 26", "Jul 26"]
-        factors_main = [0.88, 0.90, 0.92, 0.95, 0.97, 0.99, 1.02, 1.01, 1.00, 0.99, 0.98, 0.99]
-        factors_alt  = [0.85, 0.87, 0.89, 0.92, 0.94, 0.96, 0.98, 0.98, 0.97, 0.98, 0.99, 0.99]
-        
+    # Generiere rückwirkend 52 Wochen für Wochen/Monats/Jahresansichten
+    if len(history) < 52:
         history = []
-        for m, fm, fa in zip(months, factors_main, factors_alt):
+        base_date = datetime.datetime.now() - datetime.timedelta(weeks=52)
+        for i in range(53):
+            d = base_date + datetime.timedelta(weeks=i)
+            # Leichte Preisschwankungen simulieren
+            factor = 1.0 + (i - 26) * 0.001
             history.append({
-                "date": m,
-                "main_total": round(main_total * fm, 2),
-                "alt_total": round(alt_total * fa, 2)
+                "date": d.strftime("%Y-%m-%d"),
+                "main_total": round(main_total * factor, 2),
+                "alt_total": round(alt_total * factor, 2)
             })
             
-    today_str = datetime.datetime.now().strftime("%b %y")
+    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
     if not history or history[-1]["date"] != today_str:
         history.append({"date": today_str, "main_total": main_total, "alt_total": alt_total})
     else:
@@ -219,9 +273,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
     savings = main_total - alt_total
     savings_pct = (savings / main_total) * 100
     
-    labels = [item["date"] for item in history]
-    data_main = [item["main_total"] for item in history]
-    data_alt = [item.get("alt_total", alt_total) for item in history]
+    history_json = json.dumps(history)
     
     html_content = f"""<!DOCTYPE html>
 <html lang="de">
@@ -250,6 +302,11 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
         .ai-box {{ background: #0f172a; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }}
         .deal-box {{ background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }}
         
+        /* Chart Filter Buttons */
+        .chart-controls {{ display: flex; gap: 8px; margin-bottom: 12px; }}
+        .btn-filter {{ background: #334155; color: #f8fafc; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }}
+        .btn-filter.active, .btn-filter:hover {{ background: #0284c7; }}
+
         /* Table Wrapper for Horizontal Scroll on Mobile */
         .table-wrapper {{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }}
         table {{ width: 100%; border-collapse: collapse; min-width: 550px; }}
@@ -259,6 +316,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
         .row-item {{ cursor: pointer; transition: background 0.2s; }}
         .row-item:hover {{ background-color: #334155; }}
         .badge {{ background: #0284c7; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }}
+        .badge-alt {{ background: #059669; }}
         .focus-badge {{ display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }}
         .prod-img {{ width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }}
         a.shop-link {{ color: #38bdf8; text-decoration: none; font-weight: 600; word-break: break-word; }}
@@ -315,13 +373,18 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
         </div>
         
         <div class="card">
-            <h2>📈 Preisverlauf im Jahresvergleich</h2>
+            <h2>📈 Preisverlauf-Analyse</h2>
+            <div class="chart-controls">
+                <button class="btn-filter active" onclick="updateChartRange('year', this)">1 Jahr (1J)</button>
+                <button class="btn-filter" onclick="updateChartRange('month', this)">1 Monat (1M)</button>
+                <button class="btn-filter" onclick="updateChartRange('week', this)">1 Woche (1W)</button>
+            </div>
             <canvas id="priceChart"></canvas>
         </div>
 
         <div class="card">
-            <h2>⭐ Hardware-Matrix & Alternativen-Check</h2>
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf eine Tabellenzeile, um ähnliche Alternativen (± 200€) anzuzeigen.</em></p>
+            <h2>⭐ {HARDWARE_DATA['main_build']['name']}</h2>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf eine Tabellenzeile, um ebenbürtige Alternativen anzuzeigen.</em></p>
             
             <div class="table-wrapper">
                 <table>
@@ -370,18 +433,80 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
             </div>
             <p style="text-align: right; margin-top: 15px;" class="stat-sub">Gesamtsumme Main-Build: {main_total:.2f} €</p>
         </div>
+
+        <div class="card">
+            <h2>💡 {HARDWARE_DATA['alt_build']['name']}</h2>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf eine Tabellenzeile, um auch hier Alternativen zu sehen.</em></p>
+            
+            <div class="table-wrapper">
+                <table>
+                    <tr><th>Kategorie</th><th>Produkt</th><th>Shop</th><th>Preis</th></tr>"""
+    
+    for item in HARDWARE_DATA['alt_build']['items']:
+        item_id = item['part'].lower().replace(" ", "_")
+        alt_price = item['price']
+        # Fallback alts falls nicht definiert
+        alts = item.get("alts", [{"model": "Standard Alternative", "price": alt_price, "shop": "Idealo", "url": "https://www.idealo.de"}])
+        
+        html_content += f"""
+                    <tr class="row-item" onclick="toggleAlt('{item_id}')">
+                        <td><span class='badge badge-alt'>{item['part']}</span></td>
+                        <td>
+                            <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="{item['part']}">
+                            <span class="shop-link">{item['model']}</span>
+                        </td>
+                        <td>{item['shop']}</td>
+                        <td><strong>{item['price']:.2f} €</strong></td>
+                    </tr>
+                    <tr id="alt-row-{item_id}">
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div id="alt-box-{item_id}" class="alt-container">
+                                <div class="alt-title">🔄 Optionale Alternativen:</div>"""
+        
+        for alt in alts:
+            delta = alt['price'] - alt_price
+            delta_str = f"{delta:+.2f} €"
+            delta_class = "delta-cheap" if delta <= 0 else "delta-expensive"
+            html_content += f"""
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="{alt['url']}" target="_blank" class="shop-link">{alt['model']}</a> 
+                                        <span style="color: #64748b;">({alt['shop']})</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">{alt['price']:.2f} €</span>
+                                        <span class="{delta_class}">[{delta_str}]</span>
+                                    </div>
+                                </div>"""
+                            
+        html_content += """
+                            </div>
+                        </td>
+                    </tr>"""
+    
+    html_content += f"""
+                </table>
+            </div>
+            <p style="text-align: right; margin-top: 15px; color: #34d399; font-weight: bold;">Gesamtsumme Preis-Leistungs-Sieger: {alt_total:.2f} €</p>
+        </div>
     </div>
     
     <script>
-        // Chart.js Setup
+        // Rohdaten für den Verlauf
+        const rawHistory = {history_json};
+        
+        const labelsYear = rawHistory.map(item => item.date);
+        const dataMainYear = rawHistory.map(item => item.main_total);
+        const dataAltYear = rawHistory.map(item => item.alt_total);
+
         const ctx = document.getElementById('priceChart').getContext('2d');
-        new Chart(ctx, {{
+        let priceChart = new Chart(ctx, {{
             type: 'line',
             data: {{
-                labels: {json.dumps(labels)},
+                labels: labelsYear,
                 datasets: [{{
                     label: 'Main-Build (€)',
-                    data: {json.dumps(data_main)},
+                    data: dataMainYear,
                     borderColor: '#38bdf8',
                     backgroundColor: 'rgba(56, 189, 248, 0.1)',
                     tension: 0.3,
@@ -389,7 +514,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
                 }},
                 {{
                     label: 'Preis-Leistungs-Sieger (€)',
-                    data: {json.dumps(data_alt)},
+                    data: dataAltYear,
                     borderColor: '#34d399',
                     backgroundColor: 'rgba(52, 211, 153, 0.1)',
                     tension: 0.3,
@@ -408,6 +533,22 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
                 }}
             }}
         }});
+
+        // Umschalter für Jahres-, Monats- und Wochenansicht
+        function updateChartRange(range, btn) {{
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            let sliceCount = rawHistory.length;
+            if (range === 'month') sliceCount = 4;      // ca. letzte 4 Wochen / Einträge
+            else if (range === 'week') sliceCount = 2;   // letzte 2 Einträge
+
+            const sliced = rawHistory.slice(-sliceCount);
+            priceChart.data.labels = sliced.map(item => item.date);
+            priceChart.data.datasets[0].data = sliced.map(item => item.main_total);
+            priceChart.data.datasets[1].data = sliced.map(item => item.alt_total);
+            priceChart.update();
+        }}
 
         // Alternativen Klappfunktion
         function toggleAlt(id) {{
