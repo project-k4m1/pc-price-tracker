@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KI PC-Komponenten Preis-Tracker & Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        h1 { color: #38bdf8; text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }
+        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .ai-box { background: #0f172a; border-left: 4px solid #38bdf8; padding: 15px; border-radius: 4px; margin-top: 15px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background-color: #334155; color: #e2e8f0; }
+        .total { font-weight: bold; color: #34d399; font-size: 1.1rem; }
+        .badge { background: #0284c7; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .focus-badge { display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }
+        canvas { max-height: 300px; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖥️ KI PC-Preis-Tracker Dashboard</h1>
+        <div class="subtitle">Zuletzt aktualisiert: 17.08.2026 um 21:10 Uhr | EUR/USD: 1.157181</div>
+
+        <div class="card">
+            <h2>🤖 KI-Kaufberatung (Claude & Gemini)</h2>
+            <div class="focus-badge">🎯 Optmiert für Ableton 12, Revopoint 3D & Raytracing</div>
+            <p><strong>Markt-Briefing (Gemini):</strong> Der derzeit starke Euro-Kurs von knapp 1,16 USD dämpft grundsätzlich die Importkosten für PC-Hardware im europäischen Markt. Allerdings deuten die stark steigenden Speicherpreise auf eine drohende Verteuerung von Komponenten wie Arbeitsspeicher (RAM) und SSDs hin. Zusätzlich hält der globale KI-Boom den Druck auf die Produktionskapazitäten der Halbleiterhersteller hoch.</p>
+            <div class="ai-box">
+                <strong>Experten-Empfehlung (Claude Sonnet 5):</strong><br><br># Kaufempfehlung: Main-Build – JETZT KAUFEN<br><br>**Lohnt sich der Aufpreis?** Ja, eindeutig. Der Aufpreis von 1.067,35 € ist bei diesem Nutzungsprofil gut investiert: Die 9950X3D-CPU mit 16 Kernen und großem 3D-V-Cache ist für gigantische Ableton-Projekte mit vielen VST-Instanzen (starke Multi-Core-Last plus Cache-hungrige Plugin-Verarbeitung) und für das Meshing riesiger Punktewolken aus dem Revopoint POP 4 (rechenintensive CPU-Verarbeitung) dem 7900X klar überlegen. Für High-End-Raytracing-Gaming sorgt die stärkere Plattform zudem dafür, dass die RTX 5070 Ti nicht durch die CPU ausgebremst wird (kein Bottleneck).<br><br>**Warum JETZT und nicht warten?** Der a
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>📈 Preisverlauf (Historie)</h2>
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>⭐ High-End Main-Build (Wunsch-Setup)</h2>
+            <table>
+                <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr><tr><td><span class='badge'>Grafikkarte</span></td><td>MSI GeForce RTX 5070 Ti Gaming Trio OC</td><td>Notebooksbilliger</td><td>1248.99 €</td></tr><tr><td><span class='badge'>CPU & RAM Bundle</span></td><td>AMD Ryzen 9 9950X3D + 48GB DDR5-6000</td><td>Caseking</td><td>1095.00 €</td></tr><tr><td><span class='badge'>Mainboard</span></td><td>MSI MAG X870E TOMAHAWK WIFI</td><td>Notebooksbilliger</td><td>284.36 €</td></tr><tr><td><span class='badge'>SSD</span></td><td>Samsung 990 PRO SSD 1TB</td><td>Notebooksbilliger</td><td>219.00 €</td></tr><tr><td><span class='badge'>Gehäuse & Kühlung</span></td><td>Lian Li O11 Vision Compact + NZXT Kraken Elite 360</td><td>Idealo / Mix</td><td>549.00 €</td></tr>
+            </table>
+            <p style="text-align: right;" class="total">Gesamtsumme Main-Build: 3396.35 €</p>
+        </div>
+
+        <div class="card">
+            <h2>💡 Alternative / Preis-optimierter Build</h2>
+            <table>
+                <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr><tr><td><span class='badge'>Grafikkarte</span></td><td>MSI GeForce RTX 5070 Ti Ventus 3X</td><td>Idealo</td><td>1149.00 €</td></tr><tr><td><span class='badge'>Prozessor</span></td><td>AMD Ryzen 9 7900X (Einzelkauf)</td><td>Mindfactory</td><td>315.00 €</td></tr><tr><td><span class='badge'>Arbeitsspeicher</span></td><td>Crucial Pro 48GB DDR5-5600</td><td>Mindfactory</td><td>165.00 €</td></tr><tr><td><span class='badge'>Mainboard & SSD</span></td><td>MSI B650 Tomahawk + 1TB Lexar SSD</td><td>Mindfactory</td><td>280.00 €</td></tr><tr><td><span class='badge'>Gehäuse & Kühlung</span></td><td>Fractal North XL + Standard AIO</td><td>Idealo</td><td>420.00 €</td></tr>
+            </table>
+            <p style="text-align: right;" class="total">Gesamtsumme Alternative: 2329.00 €</p>
+        </div>
+    </div>
+    
+    <script>
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["17.08.2026"],
+                datasets: [{
+                    label: 'Main-Build (€)',
+                    data: [3396.35],
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Alternative (€)',
+                    data: [2329.0],
+                    borderColor: '#94a3b8',
+                    backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: '#f8fafc' } }
+                },
+                scales: {
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                    x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
