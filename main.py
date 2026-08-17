@@ -98,7 +98,7 @@ def run_claude_decision(briefing, rate, main_total, alt_total):
     """
     
     message = client.messages.create(
-        model="claude-3-5-sonnet-latest",  # <--- HIER IST DER ZEITLOSE ALIAS!
+        model="claude-3-haiku-20240307",  # <--- Universell freigeschaltetes Modell
         max_tokens=350,
         messages=[{"role": "user", "content": prompt}]
     )
