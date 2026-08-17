@@ -6,7 +6,7 @@ on:
   workflow_dispatch:      # Manueller Start-Button
 
 permissions:
-  contents: write         # Erlaubt dem Skript, die index.html hochzuladen
+  contents: write         # Erlaubt dem Skript, Dateien hochzuladen
 
 jobs:
   run-tracker:
@@ -33,10 +33,10 @@ jobs:
         run: |
           python main.py
 
-      - name: Änderungen (Dashboard) auf GitHub speichern
+      - name: Änderungen (Dashboard & History) auf GitHub speichern
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git diff --staged --quiet || git commit -m "Tägliches Dashboard-Update durch KI-Tracker"
+          git add -A
+          git diff --staged --quiet || git commit -m "Tägliches Dashboard & History-Update durch KI-Tracker"
           git push origin HEAD:main
