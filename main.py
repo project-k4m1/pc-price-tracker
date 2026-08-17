@@ -3,7 +3,7 @@ import datetime
 import json
 import feedparser
 import requests
-import google.generativeai as genai
+from google import genai
 import anthropic
 
 # API-Schlüssel aus den GitHub Secrets laden
@@ -70,10 +70,16 @@ def get_market_data():
 def run_gemini_researcher(rate, headlines):
     if not GEMINI_API_KEY:
         return "Gemini API Key nicht konfiguriert."
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    
+    # NEUES GOOGLE SDK
+    client = genai.Client(api_key=GEMINI_API_KEY)
     prompt = f"Analysiere kurz (max. 3 Sätze auf Deutsch) die Marktlage für PC-Komponenten:\n- EUR/USD: {rate}\n- News: {headlines}"
-    return model.generate_content(prompt).text
+    
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+    return response.text
 
 def run_claude_decision(briefing, rate, main_total, alt_total):
     if not ANTHROPIC_API_KEY:
