@@ -2,309 +2,308 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KI PC-Komponenten Preis-Tracker & Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        h1 { color: #38bdf8; text-align: center; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }
-        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .ai-box { background: #0f172a; border-left: 4px solid #38bdf8; padding: 15px; border-radius: 4px; margin-top: 15px; line-height: 1.5; }
-        .deal-box { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin-top: 15px; line-height: 1.5; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; }
-        th { background-color: #334155; color: #e2e8f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 15px 10px; overflow-x: hidden; }
+        .container { width: 100%; max-width: 1000px; margin: auto; }
+        h1 { color: #38bdf8; text-align: center; margin-bottom: 5px; font-size: 1.6rem; }
+        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.85rem; }
+        .card { background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }
+        
+        /* Stats Header Card */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 10px; }
+        .stat-box { background: #0f172a; padding: 14px; border-radius: 8px; border-left: 4px solid #38bdf8; }
+        .stat-box.alt-box { border-left-color: #34d399; }
+        .stat-label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+        .stat-val { font-size: 1.3rem; font-weight: bold; margin-top: 4px; color: #f8fafc; }
+        .stat-sub { font-size: 0.8rem; color: #34d399; font-weight: bold; margin-top: 2px; }
+
+        .ai-box { background: #0f172a; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }
+        .deal-box { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }
+        
+        /* Table Wrapper for Horizontal Scroll on Mobile */
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; min-width: 550px; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.9rem; }
+        th { background-color: #334155; color: #e2e8f0; font-size: 0.85rem; white-space: nowrap; }
+        
         .row-item { cursor: pointer; transition: background 0.2s; }
         .row-item:hover { background-color: #334155; }
-        .total { font-weight: bold; color: #34d399; font-size: 1.1rem; }
-        .badge { background: #0284c7; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        .focus-badge { display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }
-        .prod-img { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; margin-right: 12px; vertical-align: middle; border: 1px solid #475569; }
-        a.shop-link { color: #38bdf8; text-decoration: none; font-weight: 600; }
+        .badge { background: #0284c7; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
+        .focus-badge { display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }
+        .prod-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }
+        a.shop-link { color: #38bdf8; text-decoration: none; font-weight: 600; word-break: break-word; }
         a.shop-link:hover { text-decoration: underline; }
         
-        /* Alternativen-Aufklappbereich */
-        .alt-container { display: none; background: #0f172a; padding: 12px 15px; border-left: 3px solid #8b5cf6; margin: 8px 0; border-radius: 6px; }
-        .alt-title { font-size: 0.85rem; color: #cbd5e1; font-weight: bold; margin-bottom: 8px; }
-        .alt-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px dashed #334155; }
+        /* Alternativen Klappbereich */
+        .alt-container { display: none; background: #0f172a; padding: 12px; border-left: 3px solid #8b5cf6; margin: 6px 0; border-radius: 6px; }
+        .alt-title { font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 6px; }
+        .alt-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed #334155; gap: 5px; }
         .alt-item:last-child { border-bottom: none; }
-        .delta-cheap { color: #34d399; font-weight: bold; padding-left: 10px; }
-        .delta-expensive { color: #f87171; font-weight: bold; padding-left: 10px; }
-        canvas { max-height: 320px; width: 100%; }
+        .delta-cheap { color: #34d399; font-weight: bold; }
+        .delta-expensive { color: #f87171; font-weight: bold; }
+        
+        canvas { max-height: 280px; width: 100% !important; }
+
+        @media (max-width: 640px) {
+            body { padding: 10px 6px; }
+            h1 { font-size: 1.35rem; }
+            .card { padding: 12px; margin-bottom: 14px; }
+            .prod-img { width: 32px; height: 30px; margin-right: 6px; }
+            th, td { padding: 8px 5px; font-size: 0.82rem; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🖥️ KI PC-Preis-Tracker Dashboard</h1>
-        <div class="subtitle">Zuletzt aktualisiert: 17.08.2026 um 21:27 Uhr | EUR/USD: 1.157181</div>
+        <div class="subtitle">Zuletzt aktualisiert: 17.08.2026 um 21:34 Uhr | EUR/USD: 1.157181</div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">⭐ High-End Wunsch-Setup</div>
+                <div class="stat-val">3396.35 €</div>
+                <div class="stat-sub" style="color: #38bdf8;">Maximale Performance</div>
+            </div>
+            <div class="stat-box alt-box">
+                <div class="stat-label">💡 Preis-Leistungs-Sieger</div>
+                <div class="stat-val">2329.00 €</div>
+                <div class="stat-sub">Ersparnis: -1067.35 € (-31.4%)</div>
+            </div>
+        </div>
 
         <div class="card">
             <h2>🤖 KI-Kaufberatung & Deals</h2>
             <div class="focus-badge">🎯 Optmiert für Ableton 12, Revopoint 3D & Raytracing</div>
             
             <div class="deal-box">
-                <strong>🚨 Deal-Radar & Markt-News (Gemini):</strong><br><br>Die aktuelle Marktlage im High-End-Hardware-Bereich zeigt sich derzeit äußerst ruhig und ohne nennenswerte Preisausschläge. Dank des weiterhin recht starken Wechselkurses bleiben die Rahmenbedingungen zwar grundsätzlich solide, echte Schnäppchen lassen aktuell jedoch auf sich warten.<br><br>Aktuell keine heißen Bundles oder Gutscheine für deine Wunsch-Kategorien aktiv.
+                <strong>🚨 Deal-Radar & Markt-News (Gemini):</strong><br><br>**Marktlage:**<br>Die aktuelle Marktlage für High-End-Hardware präsentiert sich derzeit äußerst ruhig, da keine spektakulären Angebote oder bewegenden Markt-Schlagzeilen vorliegen. Trotz eines soliden Wechselkurses von ca. 1,16 müssen Gamer und Aufrüster daher vorerst auf die nächsten großen Rabattaktionen warten.<br><br>**Angebote & Rabatte:**<br>In den vorliegenden Headlines sind aktuell **keine** Gutscheine, Bundles oder Rabatte für RTX-Grafikkarten, Ryzen-CPUs, Mainboards oder SSDs zu finden.
             </div>
 
             <div class="ai-box">
-                <strong>🧠 Experten-Empfehlung (Claude Sonnet 5):</strong><br><br>**Empfehlung: Jetzt kaufen.**<br><br>Da aktuell keine relevanten Deals, Bundles oder Gutscheine für deine Zielkomponenten aktiv sind, gibt es keinen taktischen Grund, den Kauf hinauszuzögern. Der stabile Wechselkurs schafft solide Rahmenbedingungen, und ein „Abwarten auf bessere Preise" birgt das Risiko, dass sich der Kurs eher verschlechtert als verbessert – echte Schnäppchen sind laut Markteinschätzung ohnehin nicht in Sicht. Für deinen Anwendungsfall (Ableton 12, 3D-Scanning, Raytracing) zählt zudem die Produktivität ab Tag 1 mehr als ein möglicher Rabatt von wenigen Prozent in unbestimmter Zukunft. Bei 3.396,35 € Gesamtinvestition und stagnierendem Markt ist das Opportunitätskosten-Risiko des
+                <strong>🧠 Experten-Empfehlung (Claude Sonnet 5):</strong><br><br>**Empfehlung: Preis-Leistungs-Sieger Build jetzt kaufen.**<br><br>Da der Markt aktuell keine Rabattaktionen, Gutscheine oder Bundle-Angebote für die relevanten Komponenten (RTX-GPUs, Ryzen-CPUs, Mainboards, SSDs) bietet, gibt es keinen strategischen Vorteil, auf einen günstigeren Zeitpunkt für das Main-Build zu warten – die Preise sind aktuell stabil, aber auch nicht gedrückt. Mit einer Ersparnis von über 1.067 € (2329€ vs. 3396,35€) bietet der Preis-Leistungs-Sieger ein deutlich attraktiveres Verhältnis, ohne dass für Ableton 12, Revopoint-Scans oder Raytracing-Gaming spürbare Kompromisse bei der Praxistauglichkeit entstehen. Der stabile Wechselkurs von 1,16 spricht zudem
             </div>
         </div>
         
         <div class="card">
-            <h2>📈 Preisverlauf (12-Monates-Trend)</h2>
+            <h2>📈 Preisverlauf im Jahresvergleich</h2>
             <canvas id="priceChart"></canvas>
         </div>
 
         <div class="card">
             <h2>⭐ Hardware-Matrix & Alternativen-Check</h2>
-            <p style="font-size: 0.85rem; color: #94a3b8;">💡 <em>Tipp: Klicke auf eine Tabellenzeile, um ähnliche, stark performende Alternativen (± 200€) und deren Preisunterschied anzuzeigen.</em></p>
-            <table>
-                <tr><th>Kategorie</th><th>Produkt</th><th>Shop</th><th>Preis</th></tr>
-                <tr class="row-item" onclick="toggleAlt('gpu')">
-                    <td><span class='badge'>Grafikkarte</span></td>
-                    <td>
-                        <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=100&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
-                        <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">MSI GeForce RTX 5070 Ti Gaming Trio OC 🔗</a>
-                    </td>
-                    <td>Notebooksbilliger</td>
-                    <td>1248.99 €</td>
-                </tr>
-                <tr id="alt-row-gpu">
-                    <td colspan="4" style="padding: 0; border: none;">
-                        <div id="alt-box-gpu" class="alt-container">
-                            <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.idealo.de" target="_blank" class="shop-link">MSI RTX 5070 Ti Ventus 3X (Preis-Tipp)</a> 
-                                    <span style="color: #64748b;">(Idealo)</span>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf eine Tabellenzeile, um ähnliche Alternativen (± 200€) anzuzeigen.</em></p>
+            
+            <div class="table-wrapper">
+                <table>
+                    <tr><th>Kategorie</th><th>Produkt</th><th>Shop</th><th>Preis</th></tr>
+                    <tr class="row-item" onclick="toggleAlt('gpu')">
+                        <td><span class='badge'>Grafikkarte</span></td>
+                        <td>
+                            <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
+                            <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">MSI GeForce RTX 5070 Ti Gaming Trio OC 🔗</a>
+                        </td>
+                        <td>Notebooksbilliger</td>
+                        <td><strong>1248.99 €</strong></td>
+                    </tr>
+                    <tr id="alt-row-gpu">
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div id="alt-box-gpu" class="alt-container">
+                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.idealo.de" target="_blank" class="shop-link">MSI RTX 5070 Ti Ventus 3X (Preis-Tipp)</a> 
+                                        <span style="color: #64748b;">(Idealo)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">1149.00 €</span>
+                                        <span class="delta-cheap">[-99.99 €]</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span style="margin-right: 5px;">1149.00 €</span>
-                                    <span class="delta-cheap">[-99.99 €]</span>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.mindfactory.de" target="_blank" class="shop-link">NVIDIA GeForce RTX 4080 SUPER 16GB</a> 
+                                        <span style="color: #64748b;">(Mindfactory)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">1050.00 €</span>
+                                        <span class="delta-cheap">[-198.99 €]</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.mindfactory.de" target="_blank" class="shop-link">NVIDIA GeForce RTX 4080 SUPER 16GB</a> 
-                                    <span style="color: #64748b;">(Mindfactory)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">1050.00 €</span>
-                                    <span class="delta-cheap">[-198.99 €]</span>
-                                </div>
-                            </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.alternate.de" target="_blank" class="shop-link">AMD Radeon RX 7900 XTX 24GB (VRAM-Monster)</a> 
-                                    <span style="color: #64748b;">(Alternate)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">980.00 €</span>
-                                    <span class="delta-cheap">[-268.99 €]</span>
-                                </div>
-                            </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.caseking.de" target="_blank" class="shop-link">ASUS TUF Gaming RTX 5070 Ti (Leise)</a> 
-                                    <span style="color: #64748b;">(Caseking)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">1299.00 €</span>
-                                    <span class="delta-expensive">[+50.01 €]</span>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.alternate.de" target="_blank" class="shop-link">AMD Radeon RX 7900 XTX 24GB (VRAM-Monster)</a> 
+                                        <span style="color: #64748b;">(Alternate)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">980.00 €</span>
+                                        <span class="delta-cheap">[-268.99 €]</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="row-item" onclick="toggleAlt('cpu_ram')">
-                    <td><span class='badge'>CPU & RAM Bundle</span></td>
-                    <td>
-                        <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=100&auto=format&fit=crop&q=80" class="prod-img" alt="CPU & RAM Bundle">
-                        <a href="https://www.caseking.de" target="_blank" class="shop-link">AMD Ryzen 9 9950X3D + 48GB DDR5-6000 🔗</a>
-                    </td>
-                    <td>Caseking</td>
-                    <td>1095.00 €</td>
-                </tr>
-                <tr id="alt-row-cpu_ram">
-                    <td colspan="4" style="padding: 0; border: none;">
-                        <div id="alt-box-cpu_ram" class="alt-container">
-                            <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.mindfactory.de" target="_blank" class="shop-link">AMD Ryzen 7 7800X3D + 64GB DDR5 (Gaming-Fokus)</a> 
-                                    <span style="color: #64748b;">(Mindfactory)</span>
+                        </td>
+                    </tr>
+                    <tr class="row-item" onclick="toggleAlt('cpu_ram')">
+                        <td><span class='badge'>CPU & RAM Bundle</span></td>
+                        <td>
+                            <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="CPU & RAM Bundle">
+                            <a href="https://www.caseking.de" target="_blank" class="shop-link">AMD Ryzen 9 9950X3D + 48GB DDR5-6000 🔗</a>
+                        </td>
+                        <td>Caseking</td>
+                        <td><strong>1095.00 €</strong></td>
+                    </tr>
+                    <tr id="alt-row-cpu_ram">
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div id="alt-box-cpu_ram" class="alt-container">
+                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.mindfactory.de" target="_blank" class="shop-link">AMD Ryzen 7 7800X3D + 48GB DDR5 (Gaming-King)</a> 
+                                        <span style="color: #64748b;">(Mindfactory)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">580.00 €</span>
+                                        <span class="delta-cheap">[-515.00 €]</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span style="margin-right: 5px;">580.00 €</span>
-                                    <span class="delta-cheap">[-515.00 €]</span>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.caseking.de" target="_blank" class="shop-link">Intel Core i9-14900K + 64GB DDR5 (Workstation)</a> 
+                                        <span style="color: #64748b;">(Caseking)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">890.00 €</span>
+                                        <span class="delta-cheap">[-205.00 €]</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.caseking.de" target="_blank" class="shop-link">Intel Core i9-14900K + 64GB DDR5 (Workstation-Alternative)</a> 
-                                    <span style="color: #64748b;">(Caseking)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">890.00 €</span>
-                                    <span class="delta-cheap">[-205.00 €]</span>
-                                </div>
-                            </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">AMD Ryzen 9 7900X + 48GB DDR5 (Budget-Rendering)</a> 
-                                    <span style="color: #64748b;">(Notebooksbilliger)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">480.00 €</span>
-                                    <span class="delta-cheap">[-615.00 €]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="row-item" onclick="toggleAlt('mb')">
-                    <td><span class='badge'>Mainboard</span></td>
-                    <td>
-                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard">
-                        <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">MSI MAG X870E TOMAHAWK WIFI 🔗</a>
-                    </td>
-                    <td>Notebooksbilliger</td>
-                    <td>284.36 €</td>
-                </tr>
-                <tr id="alt-row-mb">
-                    <td colspan="4" style="padding: 0; border: none;">
-                        <div id="alt-box-mb" class="alt-container">
-                            <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.alternate.de" target="_blank" class="shop-link">Gigabyte X870 AORUS ELITE WIFI7</a> 
-                                    <span style="color: #64748b;">(Alternate)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">295.00 €</span>
-                                    <span class="delta-expensive">[+10.64 €]</span>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">AMD Ryzen 9 7900X + 48GB DDR5 (Preis-Leistung)</a> 
+                                        <span style="color: #64748b;">(Notebooksbilliger)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">480.00 €</span>
+                                        <span class="delta-cheap">[-615.00 €]</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.mindfactory.de" target="_blank" class="shop-link">ASUS ROG Strix B650E-F Gaming</a> 
-                                    <span style="color: #64748b;">(Mindfactory)</span>
+                        </td>
+                    </tr>
+                    <tr class="row-item" onclick="toggleAlt('mb')">
+                        <td><span class='badge'>Mainboard</span></td>
+                        <td>
+                            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard">
+                            <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">MSI MAG X870E TOMAHAWK WIFI 🔗</a>
+                        </td>
+                        <td>Notebooksbilliger</td>
+                        <td><strong>284.36 €</strong></td>
+                    </tr>
+                    <tr id="alt-row-mb">
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div id="alt-box-mb" class="alt-container">
+                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.alternate.de" target="_blank" class="shop-link">Gigabyte X870 AORUS ELITE WIFI7</a> 
+                                        <span style="color: #64748b;">(Alternate)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">295.00 €</span>
+                                        <span class="delta-expensive">[+10.64 €]</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span style="margin-right: 5px;">240.00 €</span>
-                                    <span class="delta-cheap">[-44.36 €]</span>
-                                </div>
-                            </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.idealo.de" target="_blank" class="shop-link">MSI B650 Tomahawk WiFi (Preis-Tipp)</a> 
-                                    <span style="color: #64748b;">(Idealo)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">180.00 €</span>
-                                    <span class="delta-cheap">[-104.36 €]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="row-item" onclick="toggleAlt('ssd')">
-                    <td><span class='badge'>SSD Storage</span></td>
-                    <td>
-                        <img src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=100&auto=format&fit=crop&q=80" class="prod-img" alt="SSD Storage">
-                        <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">Samsung 990 PRO SSD 1TB 🔗</a>
-                    </td>
-                    <td>Notebooksbilliger</td>
-                    <td>219.00 €</td>
-                </tr>
-                <tr id="alt-row-ssd">
-                    <td colspan="4" style="padding: 0; border: none;">
-                        <div id="alt-box-ssd" class="alt-container">
-                            <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.idealo.de" target="_blank" class="shop-link">WD_BLACK SN850X 2TB (Mehr Speicher)</a> 
-                                    <span style="color: #64748b;">(Idealo)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">185.00 €</span>
-                                    <span class="delta-cheap">[-34.00 €]</span>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.idealo.de" target="_blank" class="shop-link">MSI B650 Tomahawk WiFi (Preis-Tipp)</a> 
+                                        <span style="color: #64748b;">(Idealo)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">180.00 €</span>
+                                        <span class="delta-cheap">[-104.36 €]</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.caseking.de" target="_blank" class="shop-link">Crucial T700 Gen5 1TB (Max. Speed)</a> 
-                                    <span style="color: #64748b;">(Caseking)</span>
+                        </td>
+                    </tr>
+                    <tr class="row-item" onclick="toggleAlt('ssd')">
+                        <td><span class='badge'>SSD Storage</span></td>
+                        <td>
+                            <img src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="SSD Storage">
+                            <a href="https://www.notebooksbilliger.de" target="_blank" class="shop-link">Samsung 990 PRO SSD 1TB 🔗</a>
+                        </td>
+                        <td>Notebooksbilliger</td>
+                        <td><strong>219.00 €</strong></td>
+                    </tr>
+                    <tr id="alt-row-ssd">
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div id="alt-box-ssd" class="alt-container">
+                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.idealo.de" target="_blank" class="shop-link">WD_BLACK SN850X 2TB (Mehr Speicher)</a> 
+                                        <span style="color: #64748b;">(Idealo)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">185.00 €</span>
+                                        <span class="delta-cheap">[-34.00 €]</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span style="margin-right: 5px;">260.00 €</span>
-                                    <span class="delta-expensive">[+41.00 €]</span>
-                                </div>
-                            </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.mindfactory.de" target="_blank" class="shop-link">Lexar NM790 2TB NVMe (Preis-Tipp)</a> 
-                                    <span style="color: #64748b;">(Mindfactory)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">140.00 €</span>
-                                    <span class="delta-cheap">[-79.00 €]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                <tr class="row-item" onclick="toggleAlt('case_cool')">
-                    <td><span class='badge'>Gehäuse & Kühlung</span></td>
-                    <td>
-                        <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=100&auto=format&fit=crop&q=80" class="prod-img" alt="Gehäuse & Kühlung">
-                        <a href="https://www.idealo.de" target="_blank" class="shop-link">Lian Li O11 Vision + NZXT Kraken Elite 360 🔗</a>
-                    </td>
-                    <td>Idealo / Mix</td>
-                    <td>549.00 €</td>
-                </tr>
-                <tr id="alt-row-case_cool">
-                    <td colspan="4" style="padding: 0; border: none;">
-                        <div id="alt-box-case_cool" class="alt-container">
-                            <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.alternate.de" target="_blank" class="shop-link">Fractal Design Torrent + Corsair iCUE H150i</a> 
-                                    <span style="color: #64748b;">(Alternate)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">430.00 €</span>
-                                    <span class="delta-cheap">[-119.00 €]</span>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.mindfactory.de" target="_blank" class="shop-link">Lexar NM790 2TB NVMe (Preis-Tipp)</a> 
+                                        <span style="color: #64748b;">(Mindfactory)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">140.00 €</span>
+                                        <span class="delta-cheap">[-79.00 €]</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.idealo.de" target="_blank" class="shop-link">Fractal North XL + Standard 360 AIO</a> 
-                                    <span style="color: #64748b;">(Idealo)</span>
+                        </td>
+                    </tr>
+                    <tr class="row-item" onclick="toggleAlt('case_cool')">
+                        <td><span class='badge'>Gehäuse & Kühlung</span></td>
+                        <td>
+                            <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Gehäuse & Kühlung">
+                            <a href="https://www.idealo.de" target="_blank" class="shop-link">Lian Li O11 Vision + NZXT Kraken Elite 360 🔗</a>
+                        </td>
+                        <td>Idealo / Mix</td>
+                        <td><strong>549.00 €</strong></td>
+                    </tr>
+                    <tr id="alt-row-case_cool">
+                        <td colspan="4" style="padding: 0; border: none;">
+                            <div id="alt-box-case_cool" class="alt-container">
+                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.alternate.de" target="_blank" class="shop-link">Fractal Design Torrent + Corsair H150i</a> 
+                                        <span style="color: #64748b;">(Alternate)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">430.00 €</span>
+                                        <span class="delta-cheap">[-119.00 €]</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span style="margin-right: 5px;">380.00 €</span>
-                                    <span class="delta-cheap">[-169.00 €]</span>
+                                <div class="alt-item">
+                                    <div>
+                                        <a href="https://www.idealo.de" target="_blank" class="shop-link">Fractal North XL + Standard 360 AIO (Preis-Tipp)</a> 
+                                        <span style="color: #64748b;">(Idealo)</span>
+                                    </div>
+                                    <div>
+                                        <span style="margin-right: 5px;">380.00 €</span>
+                                        <span class="delta-cheap">[-169.00 €]</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="alt-item">
-                                <div>
-                                    <a href="https://www.mindfactory.de" target="_blank" class="shop-link">be quiet! Shadow Base 800 + Pure Loop 360</a> 
-                                    <span style="color: #64748b;">(Mindfactory)</span>
-                                </div>
-                                <div>
-                                    <span style="margin-right: 5px;">280.00 €</span>
-                                    <span class="delta-cheap">[-269.00 €]</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </table>
-            <p style="text-align: right;" class="total">Gesamtsumme Main-Build: 3396.35 €</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <p style="text-align: right; margin-top: 15px;" class="stat-sub">Gesamtsumme Main-Build: 3396.35 €</p>
         </div>
     </div>
     
@@ -316,22 +315,31 @@
             data: {
                 labels: ["Aug 25", "Sep 25", "Okt 25", "Nov 25", "Dez 25", "Jan 26", "Feb 26", "M\u00e4r 26", "Apr 26", "Mai 26", "Jun 26", "Jul 26", "Aug 26"],
                 datasets: [{
-                    label: 'Main-Build Gesamtkosten (€)',
+                    label: 'Main-Build (€)',
                     data: [2988.79, 3056.72, 3124.64, 3226.53, 3294.46, 3362.39, 3464.28, 3430.31, 3396.35, 3362.39, 3328.42, 3362.39, 3396.35],
                     borderColor: '#38bdf8',
                     backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                    tension: 0.3,
+                    fill: true
+                },
+                {
+                    label: 'Preis-Leistungs-Sieger (€)',
+                    data: [1979.65, 2026.23, 2072.81, 2142.68, 2189.26, 2235.84, 2282.42, 2282.42, 2259.13, 2282.42, 2305.71, 2305.71, 2329.0],
+                    borderColor: '#34d399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
                     tension: 0.3,
                     fill: true
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: '#f8fafc' } }
+                    legend: { labels: { color: '#f8fafc', font: { size: 11 } } }
                 },
                 scales: {
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-                    x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+                    y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } },
+                    x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
                 }
             }
         });
@@ -339,11 +347,7 @@
         // Alternativen Klappfunktion
         function toggleAlt(id) {
             const box = document.getElementById('alt-box-' + id);
-            if (box.style.display === 'block') {
-                box.style.display = 'none';
-            } else {
-                box.style.display = 'block';
-            }
+            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
         }
     </script>
 </body>
