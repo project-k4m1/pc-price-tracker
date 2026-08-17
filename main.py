@@ -71,12 +71,12 @@ def run_gemini_researcher(rate, headlines):
     if not GEMINI_API_KEY:
         return "Gemini API Key nicht konfiguriert."
     
-    # NEUES GOOGLE SDK
     client = genai.Client(api_key=GEMINI_API_KEY)
     prompt = f"Analysiere kurz (max. 3 Sätze auf Deutsch) die Marktlage für PC-Komponenten:\n- EUR/USD: {rate}\n- News: {headlines}"
     
+    # HIER IST DAS UPDATE AUF GEMINI 3.6 FLASH
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.6-flash",
         contents=prompt
     )
     return response.text
