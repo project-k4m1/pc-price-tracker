@@ -235,21 +235,22 @@ def run_claude_decision(deal_briefing, rate, main_total, alt_total):
     Begründe deine Entscheidung in 3 bis 4 präzisen Sätzen auf Deutsch.
     """
     
+    # Nutzt das immer verfügbare, neueste "Sonnet 3.5" Modell
     message = client.messages.create(
-        model="claude-sonnet-5",  # HIER IST DER FIX: Zurück zum aktuellen 2026er Modell!
+        model="claude-3-5-sonnet-latest",  
         max_tokens=1024, 
         messages=[{"role": "user", "content": prompt}]
     )
     
-    # ROBUSTE EXTRAKTION (Überspringt Thinking-Blöcke und sucht nur den Text)
+    # ROBUSTE EXTRAKTION: Ignoriert Abstürze durch Thinking-Blöcke
     final_text = ""
     for block in message.content:
-        if hasattr(block, 'text'):
-            final_text += block.text
+        # Greife nur auf das Text-Attribut zu, wenn der Typ 'text' ist
+        if getattr(block, 'type', '') == 'text':
+            final_text += getattr(block, 'text', '')
             
-    # Falls wider Erwarten gar kein Text-Attribut da ist (Fallback)
     if not final_text:
-        final_text = str(message.content)
+        final_text = "Die KI konnte keine Text-Antwort generieren."
         
     return final_text.strip()
 
@@ -392,7 +393,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
             </div>
 
             <div class="ai-box">
-                <strong>🧠 Experten-Empfehlung (Claude Sonnet 5):</strong><br><br>{decision.replace(chr(10), '<br>')}
+                <strong>🧠 Experten-Empfehlung (Claude Sonnet 3.5):</strong><br><br>{decision.replace(chr(10), '<br>')}
             </div>
         </div>
         
@@ -608,7 +609,7 @@ if __name__ == "__main__":
     print("Suche nach Bundles & Gutscheinen mit Gemini...")
     deal_briefing = run_gemini_deal_hunter(rate, headlines)
     
-    print("Berechne finale Entscheidung mit Claude Sonnet 5...")
+    print("Berechne finale Entscheidung mit Claude Sonnet 3.5...")
     decision = run_claude_decision(deal_briefing, rate, main_total, alt_total)
     
     print("Generiere HTML-Dashboard...")
