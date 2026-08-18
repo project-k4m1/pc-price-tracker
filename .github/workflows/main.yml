@@ -3,7 +3,7 @@ name: PC Preis-Tracker & Dashboard
 on:
   schedule:
     - cron: '0 8 * * *'  # Läuft täglich um 08:00 Uhr UTC
-  workflow_dispatch:      # Erlaubt den manuellen Start über den Button
+  workflow_dispatch:      # Erlaubt den manuellen Start
 
 permissions:
   contents: write         # Erlaubt das Speichern von Preisen im Code (History)
