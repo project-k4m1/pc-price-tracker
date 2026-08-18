@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 from google import genai
 import anthropic
 
-# API-Schlüssel aus den GitHub Secrets laden
+# API-Schlüssel
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
@@ -156,7 +156,7 @@ def fetch_live_price(url, fallback_price):
         return fallback_price
     
     try:
-        # Täuscht vor, ein echter Google Chrome Browser auf Windows zu sein
+        # Täuscht vor, ein echter Google Chrome Browser zu sein
         res = cffi_requests.get(url, impersonate="chrome120", timeout=15)
         soup = BeautifulSoup(res.text, 'html.parser')
         
@@ -166,7 +166,6 @@ def fetch_live_price(url, fallback_price):
             price_tag = soup.find('span', class_='price')
             
         if price_tag:
-            # Filtert alles außer Zahlen und Kommas heraus (z.B. "€ 1.248,99" -> 1248.99)
             match = re.search(r'[\d\.]+(?:,\d+)?', price_tag.text)
             if match:
                 clean_price = match.group(0).replace('.', '').replace(',', '.')
@@ -180,9 +179,7 @@ def update_all_prices():
     print("🕵️‍♂️ Starte Live-Preisabfrage bei Geizhals...")
     for build_key in HARDWARE_DATA:
         for item in HARDWARE_DATA[build_key]["items"]:
-            # Holt Live-Preis für Hauptkomponente
             item["price"] = fetch_live_price(item.get("url", ""), item["price"])
-            # Holt Live-Preis für Alternativen
             if "alts" in item:
                 for alt in item["alts"]:
                     alt["price"] = fetch_live_price(alt.get("url", ""), alt["price"])
@@ -230,7 +227,6 @@ def get_market_and_deals():
 def run_gemini_deal_hunter(rate, headlines):
     if not GEMINI_API_KEY:
         return "Gemini API Key nicht konfiguriert."
-    
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
         prompt = f"Du bist Hardware-Experte. Fasse die Marktlage und folgende Deals zusammen (nenn Gutscheine explizit): {headlines}. Wechselkurs: {rate}"
@@ -240,12 +236,11 @@ def run_gemini_deal_hunter(rate, headlines):
         )
         return response.text
     except Exception as e:
-        return f"Gemini Analyse momentan nicht verfügbar. (Grund: {str(e)})"
+        return f"Gemini Analyse momentan nicht verfügbar. (Grund: Server überlastet oder Timeout)"
 
 def run_claude_decision(deal_briefing, rate, main_total, alt_total):
     if not ANTHROPIC_API_KEY:
         return "Anthropic API Key nicht konfiguriert."
-    
     try:
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         prompt = f"""Du bist Einkaufsberater für eine High-End Workstation (Ableton 12, Revopoint 3D-Scans, Raytracing Gaming). Briefing: {deal_briefing}. Main-Build: {main_total:.2f} €. Alternative: {alt_total:.2f} €. Kaufempfehlung in 3 Sätzen?"""
@@ -255,23 +250,19 @@ def run_claude_decision(deal_briefing, rate, main_total, alt_total):
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}]
         )
-        
         final_text = ""
         for block in message.content:
             if getattr(block, 'type', '') == 'text':
                 final_text += getattr(block, 'text', '')
-                
         if not final_text:
             return "Claude konnte keinen Text generieren."
         return final_text.strip()
-        
     except Exception as e:
-        return f"Claude Empfehlung momentan nicht verfügbar. (Grund: {str(e)})"
+        return f"Claude Empfehlung momentan nicht verfügbar. (Grund: Server überlastet oder API-Fehler)"
 
 def manage_history(main_total, alt_total):
     history_file = "history.json"
     history = []
-    
     if os.path.exists(history_file):
         try:
             with open(history_file, "r", encoding="utf-8") as f:
@@ -300,14 +291,12 @@ def manage_history(main_total, alt_total):
         
     with open(history_file, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=4)
-        
     return history
 
 def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total, history):
     now = datetime.datetime.now().strftime("%d.%m.%Y um %H:%M Uhr")
     savings = main_total - alt_total
     savings_pct = (savings / main_total) * 100
-    
     history_json = json.dumps(history)
     
     html_content = f"""<!DOCTYPE html>
@@ -315,83 +304,112 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KI PC-Komponenten Preis-Tracker & Dashboard</title>
+    <title>KI PC-Komponenten Preis-Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* v0.dev High-End Design Integration */
+        :root {{
+            --bg: #0a0a0c;
+            --surface: #161618;
+            --surface-2: #1f1f22;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f5f5f7;
+            --text-muted: #8e8e93;
+            --accent: #0a84ff;
+            --green: #30d158;
+            --radius: 16px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }}
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 15px 10px; overflow-x: hidden; }}
-        .container {{ width: 100%; max-width: 1000px; margin: auto; }}
-        h1 {{ color: #38bdf8; text-align: center; margin-bottom: 5px; font-size: 1.6rem; }}
-        .subtitle {{ text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.85rem; }}
-        .card {{ background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }}
+        body {{ 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            padding: 20px 10px; 
+            overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }}
+        .container {{ width: 100%; max-width: 1050px; margin: auto; }}
+        h1 {{ color: #ffffff; text-align: center; margin-bottom: 5px; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }}
+        .subtitle {{ text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 14px; font-weight: 500; }}
         
-        .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 10px; }}
-        .stat-box {{ background: #0f172a; padding: 14px; border-radius: 8px; border-left: 4px solid #38bdf8; }}
-        .stat-box.alt-box {{ border-left-color: #34d399; }}
-        .stat-label {{ font-size: 0.8rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }}
-        .stat-val {{ font-size: 1.3rem; font-weight: bold; margin-top: 4px; color: #f8fafc; }}
-        .stat-sub {{ font-size: 0.8rem; color: #34d399; font-weight: bold; margin-top: 2px; }}
-
-        .ai-box {{ background: #0f172a; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }}
-        .deal-box {{ background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }}
+        .card {{ 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            padding: 24px; 
+            margin-bottom: 24px; 
+            box-shadow: var(--shadow); 
+        }}
+        .card h2 {{ font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #ffffff; }}
         
-        .chart-controls {{ display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }}
-        .btn-filter {{ background: #334155; color: #f8fafc; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }}
-        .btn-filter.active, .btn-filter:hover {{ background: #0284c7; }}
+        .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }}
+        .stat-box {{ background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); }}
+        .stat-label {{ font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }}
+        .stat-val {{ font-size: 32px; font-weight: 700; margin: 10px 0 6px; letter-spacing: -0.02em; color: var(--text); }}
+        .stat-sub {{ display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }}
+        .stat-sub.blue {{ background: rgba(10, 132, 255, 0.15); color: var(--accent); }}
+        .stat-sub.green {{ background: rgba(48, 209, 88, 0.15); color: var(--green); }}
 
-        .table-wrapper {{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }}
-        table {{ width: 100%; border-collapse: collapse; min-width: 550px; }}
-        th, td {{ padding: 10px 8px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.9rem; }}
-        th {{ background-color: #334155; color: #e2e8f0; font-size: 0.85rem; white-space: nowrap; }}
+        .ai-box, .deal-box {{ padding: 18px; border-radius: 12px; margin-top: 15px; line-height: 1.6; font-size: 15px; font-weight: 400; }}
+        .ai-box {{ background: var(--surface-2); border-left: 4px solid var(--accent); }}
+        .deal-box {{ background: rgba(255, 159, 10, 0.1); border-left: 4px solid #ff9f0a; color: #ffb340; }}
+        
+        .chart-controls {{ display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }}
+        .btn-filter {{ background: var(--surface-2); color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s; }}
+        .btn-filter.active, .btn-filter:hover {{ background: var(--accent); border-color: var(--accent); color: #fff; }}
+
+        .table-wrapper {{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); }}
+        table {{ width: 100%; border-collapse: collapse; min-width: 600px; background: var(--surface); }}
+        th, td {{ padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; font-weight: 500; }}
+        th {{ background-color: var(--surface-2); color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; }}
+        tr:last-child td {{ border-bottom: none; }}
         
         .row-item {{ cursor: pointer; transition: background 0.2s; }}
-        .row-item:hover {{ background-color: #334155; }}
-        .badge {{ background: #0284c7; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }}
-        .badge-alt {{ background: #059669; }}
+        .row-item:hover {{ background-color: var(--surface-2); }}
+        .badge {{ background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; }}
+        .badge-bundle {{ background: linear-gradient(135deg, #ff9f0a, #ff375f); color: #fff; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-left: 8px; }}
+        .focus-badge {{ display: inline-block; background: linear-gradient(135deg, #5e5ce6, #0a84ff); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; margin-bottom: 12px; font-weight: 600; }}
         
-        .badge-bundle {{ background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f172a; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; display: inline-block; margin-left: 6px; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3); }}
-
-        .focus-badge {{ display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }}
-        .prod-img {{ width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }}
-        a.shop-link {{ color: #38bdf8; text-decoration: none; font-weight: 600; word-break: break-word; }}
-        a.shop-link:hover {{ text-decoration: underline; }}
+        .prod-img {{ width: 42px; height: 42px; border-radius: 8px; object-fit: cover; margin-right: 12px; vertical-align: middle; border: 1px solid var(--border); }}
+        a.shop-link {{ color: var(--accent); text-decoration: none; font-weight: 600; transition: opacity 0.2s; }}
+        a.shop-link:hover {{ opacity: 0.8; }}
         
-        .total {{ font-weight: bold; color: #34d399; font-size: 1.1rem; text-align: right; margin-top: 15px; }}
+        .total {{ font-weight: 700; font-size: 18px; text-align: right; margin-top: 20px; letter-spacing: -0.01em; }}
 
-        .alt-container {{ display: none; background: #0f172a; padding: 12px; border-left: 3px solid #8b5cf6; margin: 6px 0; border-radius: 6px; }}
-        .alt-title {{ font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 6px; }}
-        .alt-item {{ display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed #334155; gap: 5px; }}
+        .alt-container {{ display: none; background: #0a0a0c; padding: 16px 20px; border-left: 3px solid #5e5ce6; margin: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }}
+        .alt-title {{ font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }}
+        .alt-item {{ display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px; }}
         .alt-item:last-child {{ border-bottom: none; }}
-        .delta-cheap {{ color: #34d399; font-weight: bold; }}
-        .delta-expensive {{ color: #f87171; font-weight: bold; }}
+        .delta-cheap {{ color: var(--green); font-weight: 700; background: rgba(48, 209, 88, 0.1); padding: 2px 6px; border-radius: 4px; }}
+        .delta-expensive {{ color: #ff375f; font-weight: 700; background: rgba(255, 55, 95, 0.1); padding: 2px 6px; border-radius: 4px; }}
         
-        canvas {{ max-height: 280px; width: 100% !important; }}
+        canvas {{ max-height: 300px; width: 100% !important; margin-top: 10px; }}
 
         @media (max-width: 640px) {{
-            body {{ padding: 10px 6px; }}
-            h1 {{ font-size: 1.35rem; }}
-            .card {{ padding: 12px; margin-bottom: 14px; }}
-            .prod-img {{ width: 32px; height: 32px; margin-right: 6px; }}
-            th, td {{ padding: 8px 5px; font-size: 0.82rem; }}
+            .main {{ padding: 20px; }}
+            .stats-grid {{ grid-template-columns: 1fr; }}
+            th, td {{ padding: 10px 12px; font-size: 13px; }}
+            .prod-img {{ width: 34px; height: 34px; }}
         }}
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🖥️ KI PC-Preis-Tracker Dashboard</h1>
+        <h1>🖥️ KI PC-Preis-Tracker</h1>
         <div class="subtitle">Zuletzt aktualisiert: {now} | EUR/USD: {rate}</div>
 
         <div class="stats-grid">
             <div class="stat-box">
-                <div class="stat-label">⭐ High-End Wunsch-Setup</div>
+                <div class="stat-label">High-End Wunsch-Setup</div>
                 <div class="stat-val">{main_total:.2f} €</div>
-                <div class="stat-sub" style="color: #38bdf8;">Maximale Performance</div>
+                <div class="stat-sub blue">Maximale Performance</div>
             </div>
-            <div class="stat-box alt-box">
-                <div class="stat-label">💡 Preis-Leistungs-Sieger</div>
+            <div class="stat-box">
+                <div class="stat-label">Preis-Leistungs-Sieger</div>
                 <div class="stat-val">{alt_total:.2f} €</div>
-                <div class="stat-sub">Ersparnis: -{savings:.2f} € (-{savings_pct:.1f}%)</div>
+                <div class="stat-sub green">Ersparnis: -{savings:.2f} € (-{savings_pct:.1f}%)</div>
             </div>
         </div>
 
@@ -420,13 +438,15 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 
         <div class="card">
             <h2>⭐ {HARDWARE_DATA['main_build']['name']}</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">💡 Tipp: Klicke auf ein Produkt für Geizhals. Klicke auf eine Tabellenzeile für Alternativen.</p>
+            
             <div class="table-wrapper">
                 <table>
                     <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>"""
     
     for item in HARDWARE_DATA['main_build']['items']:
         main_price = item['price']
-        bundle_badge = '<span class="badge-bundle">✨ BUNDLE</span>' if item.get('is_bundle') else ''
+        bundle_badge = '<span class="badge-bundle">BUNDLE</span>' if item.get('is_bundle') else ''
         html_content += f"""
                     <tr class="row-item" onclick="toggleAlt('{item['id']}')">
                         <td><span class='badge'>{item['part']}</span></td>
@@ -434,7 +454,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
                             <img src="{item['img']}" class="prod-img" alt="{item['part']}">
                             <a href="{item['url']}" target="_blank" rel="noopener" class="shop-link">{item['model']}</a>{bundle_badge}
                         </td>
-                        <td>{item['shop']}</td>
+                        <td style="color: var(--text-muted);">{item['shop']}</td>
                         <td><strong>{item['price']:.2f} €</strong></td>
                     </tr>
                     <tr id="alt-row-{item['id']}">
@@ -449,12 +469,11 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
             html_content += f"""
                                 <div class="alt-item">
                                     <div>
-                                        <a href="{alt['url']}" target="_blank" rel="noopener" class="shop-link">{alt['model']} 🔗</a> 
-                                        <span style="color: #64748b;">({alt['shop']})</span>
+                                        <a href="{alt['url']}" target="_blank" rel="noopener" class="shop-link">{alt['model']} ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">{alt['price']:.2f} €</span>
-                                        <span class="{delta_class}">[{delta_str}]</span>
+                                        <span style="margin-right: 8px;">{alt['price']:.2f} €</span>
+                                        <span class="{delta_class}">{delta_str}</span>
                                     </div>
                                 </div>"""
                             
@@ -466,11 +485,12 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
     html_content += f"""
                 </table>
             </div>
-            <p class="total">Gesamtsumme Main-Build: {main_total:.2f} €</p>
+            <p class="total" style="color: var(--accent);">Gesamtsumme Main-Build: {main_total:.2f} €</p>
         </div>
 
         <div class="card">
             <h2>💡 {HARDWARE_DATA['alt_build']['name']}</h2>
+            
             <div class="table-wrapper">
                 <table>
                     <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>"""
@@ -478,17 +498,17 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
     for item in HARDWARE_DATA['alt_build']['items']:
         item_id = item['id']
         alt_price = item['price']
-        bundle_badge = '<span class="badge-bundle">✨ BUNDLE</span>' if item.get('is_bundle') else ''
+        bundle_badge = '<span class="badge-bundle">BUNDLE</span>' if item.get('is_bundle') else ''
         alts = item.get("alts", [{"model": "Standard Alternative", "price": alt_price, "shop": item['shop'], "url": item['url']}])
         
         html_content += f"""
                     <tr class="row-item" onclick="toggleAlt('{item_id}')">
-                        <td><span class='badge badge-alt'>{item['part']}</span></td>
+                        <td><span class='badge'>{item['part']}</span></td>
                         <td>
                             <img src="{item['img']}" class="prod-img" alt="{item['part']}">
                             <a href="{item['url']}" target="_blank" rel="noopener" class="shop-link">{item['model']}</a>{bundle_badge}
                         </td>
-                        <td>{item['shop']}</td>
+                        <td style="color: var(--text-muted);">{item['shop']}</td>
                         <td><strong>{item['price']:.2f} €</strong></td>
                     </tr>
                     <tr id="alt-row-{item_id}">
@@ -503,12 +523,11 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
             html_content += f"""
                                 <div class="alt-item">
                                     <div>
-                                        <a href="{alt['url']}" target="_blank" rel="noopener" class="shop-link">{alt['model']} 🔗</a> 
-                                        <span style="color: #64748b;">({alt['shop']})</span>
+                                        <a href="{alt['url']}" target="_blank" rel="noopener" class="shop-link">{alt['model']} ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">{alt['price']:.2f} €</span>
-                                        <span class="{delta_class}">[{delta_str}]</span>
+                                        <span style="margin-right: 8px;">{alt['price']:.2f} €</span>
+                                        <span class="{delta_class}">{delta_str}</span>
                                     </div>
                                 </div>"""
                             
@@ -520,7 +539,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
     html_content += f"""
                 </table>
             </div>
-            <p class="total" style="color: #34d399;">Gesamtsumme Preis-Leistungs-Sieger: {alt_total:.2f} €</p>
+            <p class="total" style="color: var(--green);">Gesamtsumme Preis-Leistungs-Sieger: {alt_total:.2f} €</p>
         </div>
     </div>
     
@@ -539,33 +558,40 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
                 datasets: [{{
                     label: 'Main-Build (€)',
                     data: dataMainYear,
-                    borderColor: '#38bdf8',
-                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                    tension: 0.2,
+                    borderColor: '#0a84ff',
+                    backgroundColor: 'rgba(10, 132, 255, 0.15)',
+                    borderWidth: 2,
+                    tension: 0.3,
                     fill: true,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
+                    pointRadius: 0,
+                    pointHoverRadius: 6
                 }},
                 {{
                     label: 'Alternative (€)',
                     data: dataAltYear,
-                    borderColor: '#34d399',
-                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                    tension: 0.2,
+                    borderColor: '#30d158',
+                    backgroundColor: 'rgba(48, 209, 88, 0.15)',
+                    borderWidth: 2,
+                    tension: 0.3,
                     fill: true,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
+                    pointRadius: 0,
+                    pointHoverRadius: 6
                 }}]
             }},
             options: {{
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {{
+                    intersect: false,
+                    mode: 'index',
+                }},
                 plugins: {{
-                    legend: {{ labels: {{ color: '#f8fafc', font: {{ size: 11 }} }} }}
+                    legend: {{ labels: {{ color: '#f5f5f7', font: {{ family: '-apple-system', size: 12, weight: '500' }} }} }},
+                    tooltip: {{ backgroundColor: '#1f1f22', titleColor: '#8e8e93', bodyColor: '#f5f5f7', padding: 12, cornerRadius: 8 }}
                 }},
                 scales: {{
-                    y: {{ ticks: {{ color: '#94a3b8', font: {{ size: 10 }} }}, grid: {{ color: '#334155' }} }},
-                    x: {{ ticks: {{ color: '#94a3b8', font: {{ size: 10 }} }}, grid: {{ color: '#334155' }} }}
+                    y: {{ ticks: {{ color: '#8e8e93', font: {{ size: 11 }} }}, grid: {{ color: 'rgba(255,255,255,0.05)' }} }},
+                    x: {{ ticks: {{ color: '#8e8e93', font: {{ size: 11 }} }}, grid: {{ color: 'rgba(255,255,255,0.05)' }} }}
                 }}
             }}
         }});
@@ -575,8 +601,8 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
             btn.classList.add('active');
 
             let sliceCount = rawHistory.length;
-            if (range === 'month') sliceCount = 30; // Letzte 30 Datenpunkte
-            else if (range === 'week') sliceCount = 7; // Letzte 7 Datenpunkte
+            if (range === 'month') sliceCount = 30;
+            else if (range === 'week') sliceCount = 7;
 
             const sliced = rawHistory.slice(-sliceCount);
             priceChart.data.labels = sliced.map(item => item.date);
@@ -587,7 +613,11 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 
         function toggleAlt(id) {{
             const box = document.getElementById('alt-box-' + id);
-            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+            if (box.style.display === 'block') {{
+                box.style.display = 'none';
+            }} else {{
+                box.style.display = 'block';
+            }}
         }}
     </script>
 </body>
@@ -607,28 +637,26 @@ def send_discord_notification(text, deals):
         pass
 
 if __name__ == "__main__":
-    print("Starte Daten-Sammlung (inklusive Deal-Suche)...")
+    print("Starte Daten-Sammlung...")
     
-    # 1. LIVE-PREISE VON GEIZHALS HOLEN
     update_all_prices()
-    
     rate, headlines = get_market_and_deals()
     
     main_total = sum(item["price"] for item in HARDWARE_DATA["main_build"]["items"])
     alt_total = sum(item["price"] for item in HARDWARE_DATA["alt_build"]["items"])
     
-    print("Speichere tägliche Historie...")
+    print("Speichere Historie...")
     history = manage_history(main_total, alt_total)
     
-    print("Suche nach Bundles & Gutscheinen mit Gemini...")
+    print("Gemini Analyse...")
     deal_briefing = run_gemini_deal_hunter(rate, headlines)
     
-    print("Berechne finale Entscheidung mit Claude...")
+    print("Claude Analyse...")
     decision = run_claude_decision(deal_briefing, rate, main_total, alt_total)
     
-    print("Generiere HTML-Dashboard...")
+    print("Generiere HTML...")
     generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total, history)
     
-    print("Sende Discord-Benachrichtigung...")
+    print("Sende Benachrichtigung...")
     send_discord_notification(decision, deal_briefing)
-    print("Skript fehlerfrei beendet!")
+    print("Erfolgreich beendet!")
