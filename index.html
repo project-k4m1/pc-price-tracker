@@ -3,83 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KI PC-Komponenten Preis-Tracker & Dashboard</title>
+    <title>KI PC-Komponenten Preis-Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* v0.dev High-End Design Integration */
+        :root {
+            --bg: #0a0a0c;
+            --surface: #161618;
+            --surface-2: #1f1f22;
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #f5f5f7;
+            --text-muted: #8e8e93;
+            --accent: #0a84ff;
+            --green: #30d158;
+            --radius: 16px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 15px 10px; overflow-x: hidden; }
-        .container { width: 100%; max-width: 1000px; margin: auto; }
-        h1 { color: #38bdf8; text-align: center; margin-bottom: 5px; font-size: 1.6rem; }
-        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.85rem; }
-        .card { background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            padding: 20px 10px; 
+            overflow-x: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { width: 100%; max-width: 1050px; margin: auto; }
+        h1 { color: #ffffff; text-align: center; margin-bottom: 5px; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 14px; font-weight: 500; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 10px; }
-        .stat-box { background: #0f172a; padding: 14px; border-radius: 8px; border-left: 4px solid #38bdf8; }
-        .stat-box.alt-box { border-left-color: #34d399; }
-        .stat-label { font-size: 0.8rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
-        .stat-val { font-size: 1.3rem; font-weight: bold; margin-top: 4px; color: #f8fafc; }
-        .stat-sub { font-size: 0.8rem; color: #34d399; font-weight: bold; margin-top: 2px; }
-
-        .ai-box { background: #0f172a; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }
-        .deal-box { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }
+        .card { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius); 
+            padding: 24px; 
+            margin-bottom: 24px; 
+            box-shadow: var(--shadow); 
+        }
+        .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #ffffff; }
         
-        .chart-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-        .btn-filter { background: #334155; color: #f8fafc; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }
-        .btn-filter.active, .btn-filter:hover { background: #0284c7; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .stat-box { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); }
+        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-val { font-size: 32px; font-weight: 700; margin: 10px 0 6px; letter-spacing: -0.02em; color: var(--text); }
+        .stat-sub { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .stat-sub.blue { background: rgba(10, 132, 255, 0.15); color: var(--accent); }
+        .stat-sub.green { background: rgba(48, 209, 88, 0.15); color: var(--green); }
 
-        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; min-width: 550px; }
-        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.9rem; }
-        th { background-color: #334155; color: #e2e8f0; font-size: 0.85rem; white-space: nowrap; }
+        .ai-box, .deal-box { padding: 18px; border-radius: 12px; margin-top: 15px; line-height: 1.6; font-size: 15px; font-weight: 400; }
+        .ai-box { background: var(--surface-2); border-left: 4px solid var(--accent); }
+        .deal-box { background: rgba(255, 159, 10, 0.1); border-left: 4px solid #ff9f0a; color: #ffb340; }
+        
+        .chart-controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .btn-filter { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-filter.active, .btn-filter:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; background: var(--surface); }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; font-weight: 500; }
+        th { background-color: var(--surface-2); color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; }
+        tr:last-child td { border-bottom: none; }
         
         .row-item { cursor: pointer; transition: background 0.2s; }
-        .row-item:hover { background-color: #334155; }
-        .badge { background: #0284c7; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
-        .badge-alt { background: #059669; }
+        .row-item:hover { background-color: var(--surface-2); }
+        .badge { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .badge-bundle { background: linear-gradient(135deg, #ff9f0a, #ff375f); color: #fff; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-left: 8px; }
+        .focus-badge { display: inline-block; background: linear-gradient(135deg, #5e5ce6, #0a84ff); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; margin-bottom: 12px; font-weight: 600; }
         
-        .badge-bundle { background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f172a; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; display: inline-block; margin-left: 6px; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3); }
-
-        .focus-badge { display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }
-        .prod-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }
-        a.shop-link { color: #38bdf8; text-decoration: none; font-weight: 600; word-break: break-word; }
-        a.shop-link:hover { text-decoration: underline; }
+        .prod-img { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; margin-right: 12px; vertical-align: middle; border: 1px solid var(--border); }
+        a.shop-link { color: var(--accent); text-decoration: none; font-weight: 600; transition: opacity 0.2s; }
+        a.shop-link:hover { opacity: 0.8; }
         
-        .total { font-weight: bold; color: #34d399; font-size: 1.1rem; text-align: right; margin-top: 15px; }
+        .total { font-weight: 700; font-size: 18px; text-align: right; margin-top: 20px; letter-spacing: -0.01em; }
 
-        .alt-container { display: none; background: #0f172a; padding: 12px; border-left: 3px solid #8b5cf6; margin: 6px 0; border-radius: 6px; }
-        .alt-title { font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 6px; }
-        .alt-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed #334155; gap: 5px; }
+        .alt-container { display: none; background: #0a0a0c; padding: 16px 20px; border-left: 3px solid #5e5ce6; margin: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
+        .alt-title { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .alt-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px; }
         .alt-item:last-child { border-bottom: none; }
-        .delta-cheap { color: #34d399; font-weight: bold; }
-        .delta-expensive { color: #f87171; font-weight: bold; }
+        .delta-cheap { color: var(--green); font-weight: 700; background: rgba(48, 209, 88, 0.1); padding: 2px 6px; border-radius: 4px; }
+        .delta-expensive { color: #ff375f; font-weight: 700; background: rgba(255, 55, 95, 0.1); padding: 2px 6px; border-radius: 4px; }
         
-        canvas { max-height: 280px; width: 100% !important; }
+        canvas { max-height: 300px; width: 100% !important; margin-top: 10px; }
 
         @media (max-width: 640px) {
-            body { padding: 10px 6px; }
-            h1 { font-size: 1.35rem; }
-            .card { padding: 12px; margin-bottom: 14px; }
-            .prod-img { width: 32px; height: 32px; margin-right: 6px; }
-            th, td { padding: 8px 5px; font-size: 0.82rem; }
+            .main { padding: 20px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            th, td { padding: 10px 12px; font-size: 13px; }
+            .prod-img { width: 34px; height: 34px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🖥️ KI PC-Preis-Tracker Dashboard</h1>
-        <div class="subtitle">Zuletzt aktualisiert: 18.08.2026 um 09:55 Uhr | EUR/USD: 1.158578</div>
+        <h1>🖥️ KI PC-Preis-Tracker</h1>
+        <div class="subtitle">Zuletzt aktualisiert: 18.08.2026 um 13:22 Uhr | EUR/USD: 1.158578</div>
 
         <div class="stats-grid">
             <div class="stat-box">
-                <div class="stat-label">⭐ High-End Wunsch-Setup</div>
+                <div class="stat-label">High-End Wunsch-Setup</div>
                 <div class="stat-val">2600.35 €</div>
-                <div class="stat-sub" style="color: #38bdf8;">Maximale Performance</div>
+                <div class="stat-sub blue">Maximale Performance</div>
             </div>
-            <div class="stat-box alt-box">
-                <div class="stat-label">💡 Preis-Leistungs-Sieger</div>
+            <div class="stat-box">
+                <div class="stat-label">Preis-Leistungs-Sieger</div>
                 <div class="stat-val">1809.00 €</div>
-                <div class="stat-sub">Ersparnis: -791.35 € (-30.4%)</div>
+                <div class="stat-sub green">Ersparnis: -791.35 € (-30.4%)</div>
             </div>
         </div>
 
@@ -88,11 +117,11 @@
             <div class="focus-badge">🎯 Optimiert für Ableton 12, Revopoint 3D & Raytracing</div>
             
             <div class="deal-box">
-                <strong>🚨 Deal-Radar & Markt-News (Gemini):</strong><br><br>Gemini Analyse momentan nicht verfügbar. (Grund: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}})
+                <strong>🚨 Deal-Radar & Markt-News (Gemini):</strong><br><br>Hallo! Als Hardware-Experte gebe ich dir gerne eine Einschätzung zur aktuellen Marktlage basierend auf deinen Daten.<br><br>### 1. Deals & Gutscheine<br>* **Aktuelle Angebote:** Die Datenlage ist derzeit extrem ruhig – **es wurden aktuell keine extremen Deals gesichtet.**<br>* **Gutscheine:** Da derzeit keine spezifischen Sonderaktionen laufen, gibt es aktuell auch **keine nutzbaren Gutscheincodes oder Rabattaktionen**, die explizit erwähnt werden können.<br><br>---<br><br>### 2. Einschätzung der Marktlage & Wechselkurs<br>* **Wechselkurs (EUR/USD: ~1,1586):** <br>  Der Euro steht mit knapp **1,16 USD** im Vergleich zur jüngeren Vergangenheit recht stark da. Da Hardware-Komponenten (Grafikkarten, CPUs, RAM, SSDs) auf dem Weltmarkt primär in US-Dollar gehandelt werden, ist dieser Wechselkurs **grundsätzlich positiv für den europäischen Markt**. Importe sind für Händler günstiger, was teorisch Spielraum für gute Endkundenpreise bietet.<br><br>* **Warum gibt es trotzdem keine extremen Deals?**<br>  * **Marktkonsolidierung / Normalisierung:** Wenn es keine "extremen Deals" gibt, bedeutet das oft, dass die Straßenpreise aktuell stabil auf einem normalen Niveau liegen. Es gibt weder echte Ausverkäufe noch drastische Preissprünge nach oben.<br>  * **Lagerbestände:** Die Händler stehen aktuell offenbar nicht unter massivem Druck, ihre Lager durch extreme Rabattaktionen räumen zu müssen. <br><br>---<br><br>### Fazit & Kaufempfehlung<br>Wer aktuell **dringend** Hardware benötigt, profitiert zumindest vom soliden Wechselkurs, der Mondpreise verhindert. Wer jedoch auf das **ultimative Schnäppchen** aus ist, sollte die Füße stillhalten: Da es derzeit keine Top-Deals oder Gutscheine gibt, lohnt es sich, Marktbeobachtung zu betreiben und auf die nächsten Rabatt-Wellen (z. B. Quartalsend-Sales oder Mid-Season-Deals) zu warten.
             </div>
 
             <div class="ai-box">
-                <strong>🧠 Experten-Empfehlung (Claude Sonnet 3.5):</strong><br><br>Claude Empfehlung momentan nicht verfügbar. (Grund: Error code: 404 - {'type': 'error', 'error': {'type': 'not_found_error', 'message': 'model: claude-3-5-sonnet-20241022'}, 'request_id': 'req_011CeA1jqB3JXx7Ut2ypDV2E'})
+                <strong>🧠 Experten-Empfehlung (Claude Sonnet 3.5):</strong><br><br>Claude Empfehlung momentan nicht verfügbar. (Grund: Server überlastet oder API-Fehler)
             </div>
         </div>
         
@@ -108,6 +137,8 @@
 
         <div class="card">
             <h2>⭐ High-End Main-Build (Wunsch-Setup)</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">💡 Tipp: Klicke auf ein Produkt für Geizhals. Klicke auf eine Tabellenzeile für Alternativen.</p>
+            
             <div class="table-wrapper">
                 <table>
                     <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>
@@ -117,7 +148,7 @@
                             <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
                             <a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+GAMING+TRIO+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G GAMING TRIO OC</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>1248.99 €</strong></td>
                     </tr>
                     <tr id="alt-row-m_gpu">
@@ -126,22 +157,20 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">1149.00 €</span>
-                                        <span class="delta-cheap">[-99.99 €]</span>
+                                        <span style="margin-right: 8px;">1149.00 €</span>
+                                        <span class="delta-cheap">-99.99 €</span>
                                     </div>
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=RTX+4080+SUPER+16GB" target="_blank" rel="noopener" class="shop-link">NVIDIA GeForce RTX 4080 SUPER 16GB 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=RTX+4080+SUPER+16GB" target="_blank" rel="noopener" class="shop-link">NVIDIA GeForce RTX 4080 SUPER 16GB ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">1050.00 €</span>
-                                        <span class="delta-cheap">[-198.99 €]</span>
+                                        <span style="margin-right: 8px;">1050.00 €</span>
+                                        <span class="delta-cheap">-198.99 €</span>
                                     </div>
                                 </div>
                             </div>
@@ -151,9 +180,9 @@
                         <td><span class='badge'>CPU & RAM Bundle</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="CPU & RAM Bundle">
-                            <a href="https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 9950X3D</a><span class="badge-bundle">✨ BUNDLE</span>
+                            <a href="https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 9950X3D</a><span class="badge-bundle">BUNDLE</span>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>699.00 €</strong></td>
                     </tr>
                     <tr id="alt-row-m_cpu_ram">
@@ -162,22 +191,20 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">390.00 €</span>
-                                        <span class="delta-cheap">[-309.00 €]</span>
+                                        <span style="margin-right: 8px;">390.00 €</span>
+                                        <span class="delta-cheap">-309.00 €</span>
                                     </div>
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=Intel+Core+i9-14900K" target="_blank" rel="noopener" class="shop-link">Intel Core i9-14900K 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=Intel+Core+i9-14900K" target="_blank" rel="noopener" class="shop-link">Intel Core i9-14900K ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">540.00 €</span>
-                                        <span class="delta-cheap">[-159.00 €]</span>
+                                        <span style="margin-right: 8px;">540.00 €</span>
+                                        <span class="delta-cheap">-159.00 €</span>
                                     </div>
                                 </div>
                             </div>
@@ -189,7 +216,7 @@
                             <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard">
                             <a href="https://geizhals.de/?fs=MSI+MAG+X870E+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI MAG X870E TOMAHAWK WIFI</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>284.36 €</strong></td>
                     </tr>
                     <tr id="alt-row-m_mb">
@@ -198,22 +225,20 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=Gigabyte+X870+AORUS+ELITE" target="_blank" rel="noopener" class="shop-link">Gigabyte X870 AORUS ELITE WIFI7 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=Gigabyte+X870+AORUS+ELITE" target="_blank" rel="noopener" class="shop-link">Gigabyte X870 AORUS ELITE WIFI7 ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">295.00 €</span>
-                                        <span class="delta-expensive">[+10.64 €]</span>
+                                        <span style="margin-right: 8px;">295.00 €</span>
+                                        <span class="delta-expensive">+10.64 €</span>
                                     </div>
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">180.00 €</span>
-                                        <span class="delta-cheap">[-104.36 €]</span>
+                                        <span style="margin-right: 8px;">180.00 €</span>
+                                        <span class="delta-cheap">-104.36 €</span>
                                     </div>
                                 </div>
                             </div>
@@ -225,7 +250,7 @@
                             <img src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="SSD Storage">
                             <a href="https://geizhals.de/?fs=Samsung+990+PRO+1TB" target="_blank" rel="noopener" class="shop-link">Samsung 990 PRO SSD 1TB NVMe M.2</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>219.00 €</strong></td>
                     </tr>
                     <tr id="alt-row-m_ssd">
@@ -234,22 +259,20 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=WD_BLACK+SN850X+2TB" target="_blank" rel="noopener" class="shop-link">WD_BLACK SN850X NVMe SSD 2TB 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=WD_BLACK+SN850X+2TB" target="_blank" rel="noopener" class="shop-link">WD_BLACK SN850X NVMe SSD 2TB ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">185.00 €</span>
-                                        <span class="delta-cheap">[-34.00 €]</span>
+                                        <span style="margin-right: 8px;">185.00 €</span>
+                                        <span class="delta-cheap">-34.00 €</span>
                                     </div>
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=Lexar+NM790+2TB" target="_blank" rel="noopener" class="shop-link">Lexar NM790 2TB M.2 NVMe 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=Lexar+NM790+2TB" target="_blank" rel="noopener" class="shop-link">Lexar NM790 2TB M.2 NVMe ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">140.00 €</span>
-                                        <span class="delta-cheap">[-79.00 €]</span>
+                                        <span style="margin-right: 8px;">140.00 €</span>
+                                        <span class="delta-cheap">-79.00 €</span>
                                     </div>
                                 </div>
                             </div>
@@ -261,7 +284,7 @@
                             <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Gehäuse & Kühlung">
                             <a href="https://geizhals.de/?fs=Lian+Li+O11+Vision+Compact" target="_blank" rel="noopener" class="shop-link">Lian Li O11 Vision Compact</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>149.00 €</strong></td>
                     </tr>
                     <tr id="alt-row-m_case_cool">
@@ -270,22 +293,20 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=Fractal+Design+North+XL" target="_blank" rel="noopener" class="shop-link">Fractal Design North XL 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=Fractal+Design+North+XL" target="_blank" rel="noopener" class="shop-link">Fractal Design North XL ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">155.01 €</span>
-                                        <span class="delta-expensive">[+6.01 €]</span>
+                                        <span style="margin-right: 8px;">155.01 €</span>
+                                        <span class="delta-expensive">+6.01 €</span>
                                     </div>
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=NZXT+Kraken+Elite+360+RGB" target="_blank" rel="noopener" class="shop-link">NZXT Kraken Elite 360 RGB 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=NZXT+Kraken+Elite+360+RGB" target="_blank" rel="noopener" class="shop-link">NZXT Kraken Elite 360 RGB ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">279.59 €</span>
-                                        <span class="delta-expensive">[+130.59 €]</span>
+                                        <span style="margin-right: 8px;">279.59 €</span>
+                                        <span class="delta-expensive">+130.59 €</span>
                                     </div>
                                 </div>
                             </div>
@@ -293,21 +314,22 @@
                     </tr>
                 </table>
             </div>
-            <p class="total">Gesamtsumme Main-Build: 2600.35 €</p>
+            <p class="total" style="color: var(--accent);">Gesamtsumme Main-Build: 2600.35 €</p>
         </div>
 
         <div class="card">
             <h2>💡 Preis-Leistungs-Sieger Build</h2>
+            
             <div class="table-wrapper">
                 <table>
                     <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>
                     <tr class="row-item" onclick="toggleAlt('a_gpu')">
-                        <td><span class='badge badge-alt'>Grafikkarte</span></td>
+                        <td><span class='badge'>Grafikkarte</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
                             <a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>1149.00 €</strong></td>
                     </tr>
                     <tr id="alt-row-a_gpu">
@@ -316,24 +338,23 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER+Gaming+OC" target="_blank" rel="noopener" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Gaming OC 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER+Gaming+OC" target="_blank" rel="noopener" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Gaming OC ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">849.00 €</span>
-                                        <span class="delta-cheap">[-300.00 €]</span>
+                                        <span style="margin-right: 8px;">849.00 €</span>
+                                        <span class="delta-cheap">-300.00 €</span>
                                     </div>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr class="row-item" onclick="toggleAlt('a_cpu')">
-                        <td><span class='badge badge-alt'>Prozessor</span></td>
+                        <td><span class='badge'>Prozessor</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Prozessor">
                             <a href="https://geizhals.de/?fs=AMD+Ryzen+9+7900X" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 7900X</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>315.00 €</strong></td>
                     </tr>
                     <tr id="alt-row-a_cpu">
@@ -342,24 +363,23 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">390.00 €</span>
-                                        <span class="delta-expensive">[+75.00 €]</span>
+                                        <span style="margin-right: 8px;">390.00 €</span>
+                                        <span class="delta-expensive">+75.00 €</span>
                                     </div>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr class="row-item" onclick="toggleAlt('a_ram')">
-                        <td><span class='badge badge-alt'>Arbeitsspeicher</span></td>
+                        <td><span class='badge'>Arbeitsspeicher</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1562976540-1e02c414c18f?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Arbeitsspeicher">
                             <a href="https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600" target="_blank" rel="noopener" class="shop-link">Crucial Pro 48GB Kit DDR5-5600</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>165.00 €</strong></td>
                     </tr>
                     <tr id="alt-row-a_ram">
@@ -368,24 +388,23 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=Corsair+Vengeance+DDR5-6000+64GB" target="_blank" rel="noopener" class="shop-link">Corsair Vengeance DDR5-6000 64GB 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=Corsair+Vengeance+DDR5-6000+64GB" target="_blank" rel="noopener" class="shop-link">Corsair Vengeance DDR5-6000 64GB ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">210.00 €</span>
-                                        <span class="delta-expensive">[+45.00 €]</span>
+                                        <span style="margin-right: 8px;">210.00 €</span>
+                                        <span class="delta-expensive">+45.00 €</span>
                                     </div>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr class="row-item" onclick="toggleAlt('a_mb_ssd')">
-                        <td><span class='badge badge-alt'>Mainboard</span></td>
+                        <td><span class='badge'>Mainboard</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard">
                             <a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI</a>
                         </td>
-                        <td>Geizhals Bestpreis</td>
+                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
                         <td><strong>180.00 €</strong></td>
                     </tr>
                     <tr id="alt-row-a_mb_ssd">
@@ -394,12 +413,11 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://geizhals.de/?fs=ASUS+TUF+Gaming+B650-Plus+WIFI" target="_blank" rel="noopener" class="shop-link">ASUS TUF Gaming B650-Plus WIFI 🔗</a> 
-                                        <span style="color: #64748b;">(Geizhals Bestpreis)</span>
+                                        <a href="https://geizhals.de/?fs=ASUS+TUF+Gaming+B650-Plus+WIFI" target="_blank" rel="noopener" class="shop-link">ASUS TUF Gaming B650-Plus WIFI ↗</a> 
                                     </div>
                                     <div>
-                                        <span style="margin-right: 5px;">195.00 €</span>
-                                        <span class="delta-expensive">[+15.00 €]</span>
+                                        <span style="margin-right: 8px;">195.00 €</span>
+                                        <span class="delta-expensive">+15.00 €</span>
                                     </div>
                                 </div>
                             </div>
@@ -407,7 +425,7 @@
                     </tr>
                 </table>
             </div>
-            <p class="total" style="color: #34d399;">Gesamtsumme Preis-Leistungs-Sieger: 1809.00 €</p>
+            <p class="total" style="color: var(--green);">Gesamtsumme Preis-Leistungs-Sieger: 1809.00 €</p>
         </div>
     </div>
     
@@ -426,33 +444,40 @@
                 datasets: [{
                     label: 'Main-Build (€)',
                     data: dataMainYear,
-                    borderColor: '#38bdf8',
-                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                    tension: 0.2,
+                    borderColor: '#0a84ff',
+                    backgroundColor: 'rgba(10, 132, 255, 0.15)',
+                    borderWidth: 2,
+                    tension: 0.3,
                     fill: true,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
+                    pointRadius: 0,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Alternative (€)',
                     data: dataAltYear,
-                    borderColor: '#34d399',
-                    backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                    tension: 0.2,
+                    borderColor: '#30d158',
+                    backgroundColor: 'rgba(48, 209, 88, 0.15)',
+                    borderWidth: 2,
+                    tension: 0.3,
                     fill: true,
-                    pointRadius: 2,
-                    pointHoverRadius: 5
+                    pointRadius: 0,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
                 plugins: {
-                    legend: { labels: { color: '#f8fafc', font: { size: 11 } } }
+                    legend: { labels: { color: '#f5f5f7', font: { family: '-apple-system', size: 12, weight: '500' } } },
+                    tooltip: { backgroundColor: '#1f1f22', titleColor: '#8e8e93', bodyColor: '#f5f5f7', padding: 12, cornerRadius: 8 }
                 },
                 scales: {
-                    y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } },
-                    x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
+                    y: { ticks: { color: '#8e8e93', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { ticks: { color: '#8e8e93', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
                 }
             }
         });
@@ -462,8 +487,8 @@
             btn.classList.add('active');
 
             let sliceCount = rawHistory.length;
-            if (range === 'month') sliceCount = 30; // Letzte 30 Datenpunkte
-            else if (range === 'week') sliceCount = 7; // Letzte 7 Datenpunkte
+            if (range === 'month') sliceCount = 30;
+            else if (range === 'week') sliceCount = 7;
 
             const sliced = rawHistory.slice(-sliceCount);
             priceChart.data.labels = sliced.map(item => item.date);
@@ -474,7 +499,11 @@
 
         function toggleAlt(id) {
             const box = document.getElementById('alt-box-' + id);
-            box.style.display = (box.style.display === 'block') ? 'none' : 'block';
+            if (box.style.display === 'block') {
+                box.style.display = 'none';
+            } else {
+                box.style.display = 'block';
+            }
         }
     </script>
 </body>
