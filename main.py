@@ -236,8 +236,8 @@ def run_claude_decision(deal_briefing, rate, main_total, alt_total):
     """
     
     message = client.messages.create(
-        model="claude-3-7-sonnet-20250219",  # Nutzt das aktuelle Thinking Modell
-        max_tokens=1024, # Angehoben für interne Denk-Tokens
+        model="claude-sonnet-5",  # HIER IST DER FIX: Zurück zum aktuellen 2026er Modell!
+        max_tokens=1024, 
         messages=[{"role": "user", "content": prompt}]
     )
     
