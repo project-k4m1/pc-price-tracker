@@ -8,11 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; overflow-x: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 15px 10px; overflow-x: hidden; }
         .container { width: 100%; max-width: 1000px; margin: auto; }
         h1 { color: #38bdf8; text-align: center; margin-bottom: 5px; font-size: 1.6rem; }
-        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }
-        .card { background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }
+        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.85rem; }
+        .card { background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 10px; }
         .stat-box { background: #0f172a; padding: 14px; border-radius: 8px; border-left: 4px solid #38bdf8; }
@@ -21,33 +21,34 @@
         .stat-val { font-size: 1.3rem; font-weight: bold; margin-top: 4px; color: #f8fafc; }
         .stat-sub { font-size: 0.8rem; color: #34d399; font-weight: bold; margin-top: 2px; }
 
-        .ai-box { background: #0f172a; border-left: 4px solid #38bdf8; padding: 15px; border-radius: 4px; margin-top: 15px; line-height: 1.5; font-size: 0.95rem; }
-        .deal-box { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin-top: 15px; line-height: 1.5; font-size: 0.95rem; }
+        .ai-box { background: #0f172a; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }
+        .deal-box { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }
         
-        .chart-controls { display: flex; gap: 8px; margin-bottom: 12px; }
+        .chart-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
         .btn-filter { background: #334155; color: #f8fafc; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         .btn-filter.active, .btn-filter:hover { background: #0284c7; }
 
         .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; min-width: 550px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.9rem; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.9rem; }
         th { background-color: #334155; color: #e2e8f0; font-size: 0.85rem; white-space: nowrap; }
         
         .row-item { cursor: pointer; transition: background 0.2s; }
         .row-item:hover { background-color: #334155; }
-        .badge { background: #0284c7; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }
+        .badge { background: #0284c7; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
         .badge-alt { background: #059669; }
         
-        .badge-bundle { background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f172a; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; display: inline-block; margin-left: 6px; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3); }
+        /* Goldgelbes Bundle-Badge */
+        .badge-bundle { background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f172a; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; display: inline-block; margin-left: 6px; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3); }
 
-        .focus-badge { display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }
-        .prod-img { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; margin-right: 12px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }
+        .focus-badge { display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }
+        .prod-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }
         a.shop-link { color: #38bdf8; text-decoration: none; font-weight: 600; word-break: break-word; }
         a.shop-link:hover { text-decoration: underline; }
         
         .total { font-weight: bold; color: #34d399; font-size: 1.1rem; text-align: right; margin-top: 15px; }
 
-        .alt-container { display: none; background: #0f172a; padding: 12px 15px; border-left: 3px solid #8b5cf6; margin: 8px 0; border-radius: 6px; }
+        .alt-container { display: none; background: #0f172a; padding: 12px; border-left: 3px solid #8b5cf6; margin: 6px 0; border-radius: 6px; }
         .alt-title { font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 6px; }
         .alt-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed #334155; gap: 5px; }
         .alt-item:last-child { border-bottom: none; }
@@ -68,19 +69,36 @@
 <body>
     <div class="container">
         <h1>🖥️ KI PC-Preis-Tracker Dashboard</h1>
-        <div class="subtitle">Zuletzt aktualisiert: 18.08.2026 um 07:49 Uhr | EUR/USD: 1.158578</div>
+        <div class="subtitle">Zuletzt aktualisiert: 18.08.2026 um 08:42 Uhr | EUR/USD: 1.158578</div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">⭐ High-End Wunsch-Setup</div>
+                <div class="stat-val">3396.35 €</div>
+                <div class="stat-sub" style="color: #38bdf8;">Maximale Performance</div>
+            </div>
+            <div class="stat-box alt-box">
+                <div class="stat-label">💡 Preis-Leistungs-Sieger</div>
+                <div class="stat-val">2329.00 €</div>
+                <div class="stat-sub">Ersparnis: -1067.35 € (-31.4%)</div>
+            </div>
+        </div>
 
         <div class="card">
-            <h2>🤖 KI-Kaufberatung (Claude & Gemini)</h2>
+            <h2>🤖 KI-Kaufberatung & Deals</h2>
             <div class="focus-badge">🎯 Optimiert für Ableton 12, Revopoint 3D & Raytracing</div>
-            <p style="margin-top: 8px;"><strong>Markt-Briefing:</strong> Der Markt für PC-Komponenten präsentiert sich aktuell weitgehend stabil und ohne signifikante Preisschwankungen. Der recht starke Euro-Kurs von knapp 1,16 USD dämpft zudem die Importkosten für Hardware, was sich positiv auf das Preisniveau im Euroraum auswirkt. Für Konsumenten ergibt sich daraus derzeit ein verlässliches und kauffreundliches Umfeld.</p>
+            
+            <div class="deal-box">
+                <strong>🚨 Deal-Radar & Markt-News (Gemini):</strong><br><br>Hallo! Als Hardware-Experte habe ich die aktuelle Marktlage für dich analysiert und die vorliegenden Informationen eingeordnet:<br><br>### 1. Einordnung des Wechselkurses (1.158578)<br>Ein Wechselkurs von knapp **1,16 (EUR/USD)** ist für den europäischen Hardware-Markt aktuell eine **gute Ausgangslage**. Da der Großteil der Elektronikkomponenten in US-Dollar gehandelt wird, sorgt ein vergleichsweise starker Euro dafür, dass die Importkosten moderat bleiben. Das verhindert derzeit unbegründete Preissprünge bei Importware wie Grafikkarten, Prozessoren und Mainboards.<br><br>---<br><br>### 2. Allgemeine Marktlage (Hardware-Sektor)<br>* **Grafikkarten (GPUs):** Der Markt befindet sich in einer Konsolidierungsphase. Die Preise für die aktuelle Generation (NVIDIA RTX 40-Serie und AMD Radeon RX 7000-Serie) haben sich auf einem stabilen Niveau eingependelt. Es gibt weder massive Preisabstürze noch extreme Engpässe.<br>* **Prozessoren (CPUs):** AMDs AM5-Plattform (Ryzen 7000/9000) gewinnt weiter an Beliebtheit. Intel steht nach den Stabilitätsthemen der 13. und 14. Generation unter Druck, was die Preise bei älteren Intel-Modellen attraktiv macht, aber die Nachfrage verhalten hält.<br>* **Arbeitsspeicher & SSDs:** Die Tiefpreise bei DDR5-RAM und NVMe-SSDs sind vorbei. Die Hersteller haben die Produktion gedrosselt, weshalb die Preise für Speicher derzeit leicht ansteigen oder auf konstantem Niveau verharren.<br><br>---<br><br>### 3. Deals & Gutscheine<br>* **Aktuelle Deal-Lage:** **`Aktuell keine extremen Deals gesichtet.`**<br>* **Gutscheine:** Zurzeit liegen **keine aktiven oder nennenswerten Gutscheincodes** vor.<br><br>---<br><br>### Fazit & Empfehlung<br>Wir befinden uns momentan in einer typischen **Übergangsphase**. Die Marktpreise sind zwar fair und stabil (unterstützt durch den guten Wechselkurs), aber es fehlen echte Rabatt-Highlights oder Abverkäufe. <br><br>**Experten-Tipp:** Wenn du aktuell nicht dringend aufrüsten musst, lohnt es sich, die Füße stillzuhalten und auf kommende Sales-Events (wie den Prime Day, Cyber Week oder gezielte Mindstar-/Lagerhüter-Aktionen der Händler) zu warten.
+            </div>
+
             <div class="ai-box">
-                <strong>Empfehlung:</strong><br><br>**Empfehlung: JETZT KAUFEN**<br><br>Der aktuell starke Euro-Kurs von knapp 1,16 USD verringert die Importkosten für Hardware spürbar und wirkt sich damit direkt preisdämpfend auf beide Konfigurationen aus. Da der Markt für PC-Komponenten derzeit stabil ist und keine signifikanten Preisschwankungen oder absehbaren Preissenkungen zu erwarten sind, besteht kein taktischer Vorteil im Abwarten. Ein Zuwarten birgt zudem das Risiko, dass sich der Euro-Kurs wieder verschlechtert und damit die aktuell günstigen Konditionen verloren gehen – das jetzige Umfeld sollte daher genutzt werden.
+                <strong>🧠 Experten-Empfehlung (Claude Sonnet 3.5):</strong><br><br>Claude Empfehlung momentan nicht verfügbar. (Grund: Error code: 404 - {'type': 'error', 'error': {'type': 'not_found_error', 'message': 'model: claude-3-5-sonnet-20241022'}, 'request_id': 'req_011Ce9v8tGGa1kUNDoF1ScHW'})
             </div>
         </div>
         
         <div class="card">
-            <h2>📈 Preisverlauf-Analyse</h2>
+            <h2>📈 Preisverlauf mit täglichen Datenpunkten</h2>
             <div class="chart-controls">
                 <button class="btn-filter active" onclick="updateChartRange('year', this)">1 Jahr (1J)</button>
                 <button class="btn-filter" onclick="updateChartRange('month', this)">1 Monat (1M)</button>
@@ -91,14 +109,16 @@
 
         <div class="card">
             <h2>⭐ High-End Main-Build (Wunsch-Setup)</h2>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf das Produkt, um direkt zur Händler-Unterseite zu gelangen. Klicke auf eine Tabellenzeile, um Alternativen zu sehen.</em></p>
+            
             <div class="table-wrapper">
                 <table>
-                    <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr>
+                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Preis</th></tr>
                     <tr class="row-item" onclick="toggleAlt('m_gpu')">
                         <td><span class='badge'>Grafikkarte</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
-                            <a href="https://www.notebooksbilliger.de/msi+geforce+rtx+5070+ti+16g+gaming+trio+oc+grafikkarte-879823" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G GAMING TRIO OC 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+GAMING+TRIO+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G GAMING TRIO OC</a>
                         </td>
                         <td>Notebooksbilliger</td>
                         <td><strong>1248.99 €</strong></td>
@@ -109,7 +129,7 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.notebooksbilliger.de/msi+geforce+rtx+5070+ti+16g+ventus+3x+oc+grafikkarte-879820" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+VENTUS" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC 🔗</a> 
                                         <span style="color: #64748b;">(Notebooksbilliger)</span>
                                     </div>
                                     <div>
@@ -119,7 +139,7 @@
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/16GB-MSI-GeForce-RTX-4080-SUPER" target="_blank" rel="noopener" class="shop-link">NVIDIA GeForce RTX 4080 SUPER 16GB 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=RTX+4080+SUPER" target="_blank" rel="noopener" class="shop-link">NVIDIA GeForce RTX 4080 SUPER 16GB 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -134,7 +154,7 @@
                         <td><span class='badge'>CPU & RAM Bundle</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="CPU & RAM Bundle">
-                            <a href="https://www.caseking.de/amd-ryzen-9-9950x3d-bundle-48gb-ddr5-6000-hpam-254.html" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 9950X3D + ADATA XPG Lancer BLADE RGB 48 GB DDR5-6000 🔗</a><span class="badge-bundle">✨ BUNDLE</span>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+9+9950X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 9950X3D + 48 GB DDR5-6000</a><span class="badge-bundle">✨ BUNDLE</span>
                         </td>
                         <td>Caseking</td>
                         <td><strong>1095.00 €</strong></td>
@@ -145,7 +165,7 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/AMD-Ryzen-7-7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D (Einzelkauf) 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D (Einzelkauf) 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -155,7 +175,7 @@
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.caseking.de/intel-core-i9-14900k-hpit-752.html" target="_blank" rel="noopener" class="shop-link">Intel Core i9-14900K (Einzelkauf) 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Intel+Core+i9-14900K" target="_blank" rel="noopener" class="shop-link">Intel Core i9-14900K (Einzelkauf) 🔗</a> 
                                         <span style="color: #64748b;">(Caseking)</span>
                                     </div>
                                     <div>
@@ -170,7 +190,7 @@
                         <td><span class='badge'>Mainboard</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard">
-                            <a href="https://www.notebooksbilliger.de/msi+mag+x870e+tomahawk+wifi+mainboard-865412" target="_blank" rel="noopener" class="shop-link">MSI MAG X870E TOMAHAWK WIFI 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+MAG+X870E+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI MAG X870E TOMAHAWK WIFI</a>
                         </td>
                         <td>Notebooksbilliger</td>
                         <td><strong>284.36 €</strong></td>
@@ -181,7 +201,7 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.alternate.de/Gigabyte/X870-AORUS-ELITE-WIFI7-Mainboard" target="_blank" rel="noopener" class="shop-link">Gigabyte X870 AORUS ELITE WIFI7 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Gigabyte+X870+AORUS+ELITE" target="_blank" rel="noopener" class="shop-link">Gigabyte X870 AORUS ELITE WIFI7 🔗</a> 
                                         <span style="color: #64748b;">(Alternate)</span>
                                     </div>
                                     <div>
@@ -191,7 +211,7 @@
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/MSI-MAG-B650-Tomahawk-WIFI" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+B650+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -206,7 +226,7 @@
                         <td><span class='badge'>SSD Storage</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="SSD Storage">
-                            <a href="https://www.notebooksbilliger.de/samsung+990+pro+1tb+m2+pcie+40+ssd-785412" target="_blank" rel="noopener" class="shop-link">Samsung 990 PRO SSD 1TB NVMe M.2 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Samsung+990+PRO+1TB" target="_blank" rel="noopener" class="shop-link">Samsung 990 PRO SSD 1TB NVMe M.2</a>
                         </td>
                         <td>Notebooksbilliger</td>
                         <td><strong>219.00 €</strong></td>
@@ -217,7 +237,7 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/2TB-WD-Black-SN850X" target="_blank" rel="noopener" class="shop-link">WD_BLACK SN850X NVMe SSD 2TB 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=WD_BLACK+SN850X+2TB" target="_blank" rel="noopener" class="shop-link">WD_BLACK SN850X NVMe SSD 2TB 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -227,7 +247,7 @@
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/2TB-Lexar-NM790" target="_blank" rel="noopener" class="shop-link">Lexar NM790 2TB M.2 NVMe 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lexar+NM790+2TB" target="_blank" rel="noopener" class="shop-link">Lexar NM790 2TB M.2 NVMe 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -242,7 +262,7 @@
                         <td><span class='badge'>Gehäuse & Kühlung</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Gehäuse & Kühlung">
-                            <a href="https://www.caseking.de/lian-li-o11-vision-compact-midi-tower-gehaeuse-geli-942.html" target="_blank" rel="noopener" class="shop-link">Lian Li O11 Vision Compact + NZXT Kraken Elite 360 RGB 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+O11+Vision+Compact" target="_blank" rel="noopener" class="shop-link">Lian Li O11 Vision Compact + Kraken Elite 360</a>
                         </td>
                         <td>Caseking / NBB</td>
                         <td><strong>549.00 €</strong></td>
@@ -253,7 +273,7 @@
                                 <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.notebooksbilliger.de/fractal+design+north+xl+charcoal+black+tg+pc+gehaeuse-831002" target="_blank" rel="noopener" class="shop-link">Fractal Design North XL Charcoal Black TG 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Fractal+Design+North+XL" target="_blank" rel="noopener" class="shop-link">Fractal Design North XL 🔗</a> 
                                         <span style="color: #64748b;">(Notebooksbilliger)</span>
                                     </div>
                                     <div>
@@ -263,7 +283,7 @@
                                 </div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.notebooksbilliger.de/nzxt+kraken+elite+360+rgb+360mm+schwarz-801245" target="_blank" rel="noopener" class="shop-link">NZXT Kraken Elite 360 RGB Schwarz 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=NZXT+Kraken+Elite+360+RGB" target="_blank" rel="noopener" class="shop-link">NZXT Kraken Elite 360 RGB 🔗</a> 
                                         <span style="color: #64748b;">(Notebooksbilliger)</span>
                                     </div>
                                     <div>
@@ -280,15 +300,17 @@
         </div>
 
         <div class="card">
-            <h2>💡 Alternative / Preis-optimierter Build</h2>
+            <h2>💡 Preis-Leistungs-Sieger Build</h2>
+            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf ein Produkt für die Händler-Unterseite.</em></p>
+            
             <div class="table-wrapper">
                 <table>
-                    <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr>
+                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Preis</th></tr>
                     <tr class="row-item" onclick="toggleAlt('a_gpu')">
                         <td><span class='badge badge-alt'>Grafikkarte</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
-                            <a href="https://www.notebooksbilliger.de/msi+geforce+rtx+5070+ti+16g+ventus+3x+oc+grafikkarte-879820" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+VENTUS+3X" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC</a>
                         </td>
                         <td>Notebooksbilliger</td>
                         <td><strong>1149.00 €</strong></td>
@@ -299,7 +321,7 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/16GB-Gigabyte-GeForce-RTX-4070-Ti-SUPER" target="_blank" rel="noopener" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Gaming OC 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Gigabyte+RTX+4070+Ti+SUPER" target="_blank" rel="noopener" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Gaming OC 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -314,7 +336,7 @@
                         <td><span class='badge badge-alt'>Prozessor</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Prozessor">
-                            <a href="https://www.mindfactory.de/product_info.php/AMD-Ryzen-9-7900X-12x-4-70GHz-So-AM5-WOF_1464662.html" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 7900X 12x 4.70GHz 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+9+7900X" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 7900X 12x 4.70GHz</a>
                         </td>
                         <td>Mindfactory</td>
                         <td><strong>315.00 €</strong></td>
@@ -325,7 +347,7 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/AMD-Ryzen-7-7800X3D-8x-4-20GHz-So-AM5-WOF_1481120.html" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D 8x 4.20GHz 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D 8x 4.20GHz 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -340,7 +362,7 @@
                         <td><span class='badge badge-alt'>Arbeitsspeicher</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1562976540-1e02c414c18f?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Arbeitsspeicher">
-                            <a href="https://www.mindfactory.de/product_info.php/48GB-Crucial-Pro-DDR5-5600-DIMM-CL46-Dual-Kit_1498210.html" target="_blank" rel="noopener" class="shop-link">Crucial Pro 48GB Kit DDR5-5600 UDIMM 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Crucial+Pro+48GB+DDR5" target="_blank" rel="noopener" class="shop-link">Crucial Pro 48GB Kit DDR5-5600 UDIMM</a>
                         </td>
                         <td>Mindfactory</td>
                         <td><strong>165.00 €</strong></td>
@@ -351,7 +373,7 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.caseking.de/corsair-vengeance-ddr5-6000-64gb.html" target="_blank" rel="noopener" class="shop-link">Corsair Vengeance DDR5-6000 64GB Dual Kit 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Corsair+Vengeance+DDR5+64GB" target="_blank" rel="noopener" class="shop-link">Corsair Vengeance DDR5-6000 64GB Dual Kit 🔗</a> 
                                         <span style="color: #64748b;">(Caseking)</span>
                                     </div>
                                     <div>
@@ -366,7 +388,7 @@
                         <td><span class='badge badge-alt'>Mainboard & SSD</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard & SSD">
-                            <a href="https://www.mindfactory.de/product_info.php/MSI-MAG-B650-Tomahawk-WIFI-So-AM5-Mainboard_1469697.html" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI + 1TB Lexar NM790 NVMe SSD 🔗</a><span class="badge-bundle">✨ BUNDLE</span>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+B650+TOMAHAWK" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI + 1TB Lexar NM790</a><span class="badge-bundle">✨ BUNDLE</span>
                         </td>
                         <td>Mindfactory</td>
                         <td><strong>280.00 €</strong></td>
@@ -377,7 +399,7 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.alternate.de/ASUS/TUF-GAMING-B650-PLUS-WIFI" target="_blank" rel="noopener" class="shop-link">ASUS TUF Gaming B650-Plus WIFI 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=ASUS+TUF+Gaming+B650" target="_blank" rel="noopener" class="shop-link">ASUS TUF Gaming B650-Plus WIFI 🔗</a> 
                                         <span style="color: #64748b;">(Alternate)</span>
                                     </div>
                                     <div>
@@ -392,7 +414,7 @@
                         <td><span class='badge badge-alt'>Gehäuse & Kühlung</span></td>
                         <td>
                             <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Gehäuse & Kühlung">
-                            <a href="https://www.notebooksbilliger.de/fractal+design+north+xl+charcoal+black+tg+pc+gehaeuse-831002" target="_blank" rel="noopener" class="shop-link">Fractal Design North XL Charcoal Black TG + 360mm AIO 🔗</a>
+                            <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Fractal+Design+North+XL" target="_blank" rel="noopener" class="shop-link">Fractal North XL Charcoal Black TG + 360mm AIO</a>
                         </td>
                         <td>Notebooksbilliger</td>
                         <td><strong>420.00 €</strong></td>
@@ -403,7 +425,7 @@
                                 <div class="alt-title">🔄 Optionale Alternativen:</div>
                                 <div class="alt-item">
                                     <div>
-                                        <a href="https://www.mindfactory.de/product_info.php/be-quiet--Shadow-Base-800-FX" target="_blank" rel="noopener" class="shop-link">be quiet! Shadow Base 800 FX Black 🔗</a> 
+                                        <a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=be+quiet!+Shadow+Base+800" target="_blank" rel="noopener" class="shop-link">be quiet! Shadow Base 800 FX Black 🔗</a> 
                                         <span style="color: #64748b;">(Mindfactory)</span>
                                     </div>
                                     <div>
@@ -416,7 +438,7 @@
                     </tr>
                 </table>
             </div>
-            <p class="total">Gesamtsumme Alternative: 2329.00 €</p>
+            <p class="total" style="color: #34d399;">Gesamtsumme Preis-Leistungs-Sieger: 2329.00 €</p>
         </div>
     </div>
     
@@ -471,8 +493,8 @@
             btn.classList.add('active');
 
             let sliceCount = rawHistory.length;
-            if (range === 'month') sliceCount = 30;
-            else if (range === 'week') sliceCount = 7;
+            if (range === 'month') sliceCount = 30; // Letzte 30 Datenpunkte
+            else if (range === 'week') sliceCount = 7; // Letzte 7 Datenpunkte
 
             const sliced = rawHistory.slice(-sliceCount);
             priceChart.data.labels = sliced.map(item => item.date);
