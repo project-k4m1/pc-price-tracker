@@ -11,7 +11,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 
-# Hardware-Matrix mit funktionierenden Such-Links, Bildern und echtem Bundle-Status
+# Hardware-Matrix mit exakten Unterseiten-Links, Bildern und echtem Bundle-Status
 HARDWARE_DATA = {
     "main_build": {
         "name": "High-End Main-Build (Wunsch-Setup)",
@@ -236,11 +236,22 @@ def run_claude_decision(deal_briefing, rate, main_total, alt_total):
     """
     
     message = client.messages.create(
-        model="claude-sonnet-5",
-        max_tokens=350,
+        model="claude-3-7-sonnet-20250219",  # Nutzt das aktuelle Thinking Modell
+        max_tokens=1024, # Angehoben für interne Denk-Tokens
         messages=[{"role": "user", "content": prompt}]
     )
-    return message.content[0].text
+    
+    # ROBUSTE EXTRAKTION (Überspringt Thinking-Blöcke und sucht nur den Text)
+    final_text = ""
+    for block in message.content:
+        if hasattr(block, 'text'):
+            final_text += block.text
+            
+    # Falls wider Erwarten gar kein Text-Attribut da ist (Fallback)
+    if not final_text:
+        final_text = str(message.content)
+        
+    return final_text.strip()
 
 def manage_history(main_total, alt_total):
     history_file = "history.json"
@@ -259,6 +270,7 @@ def manage_history(main_total, alt_total):
         base_date = datetime.datetime.now() - datetime.timedelta(days=365)
         for i in range(366):
             d = base_date + datetime.timedelta(days=i)
+            # Leichte Tages-Schwankungen simulieren
             factor_m = 1.0 + ((i - 180) / 180.0) * 0.02
             factor_a = 1.0 + ((i - 180) / 180.0) * 0.015
             history.append({
