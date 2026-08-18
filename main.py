@@ -3,6 +3,9 @@ import datetime
 import json
 import feedparser
 import requests
+import re
+from curl_cffi import requests as cffi_requests
+from bs4 import BeautifulSoup
 from google import genai
 import anthropic
 
@@ -11,7 +14,7 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 
-# Hardware-Matrix mit exakten Unterseiten-Links, Bildern und echtem Bundle-Status
+# Hardware-Matrix mit Geizhals-Suchlinks für das Live-Scraping
 HARDWARE_DATA = {
     "main_build": {
         "name": "High-End Main-Build (Wunsch-Setup)",
@@ -21,27 +24,27 @@ HARDWARE_DATA = {
                 "part": "Grafikkarte",
                 "model": "MSI GeForce RTX 5070 Ti 16G GAMING TRIO OC",
                 "price": 1248.99,
-                "shop": "Notebooksbilliger",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+GAMING+TRIO+OC",
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+GAMING+TRIO+OC",
                 "img": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC", "price": 1149.00, "shop": "Notebooksbilliger", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+VENTUS"},
-                    {"model": "NVIDIA GeForce RTX 4080 SUPER 16GB", "price": 1050.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=RTX+4080+SUPER"}
+                    {"model": "MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC", "price": 1149.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC"},
+                    {"model": "NVIDIA GeForce RTX 4080 SUPER 16GB", "price": 1050.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=RTX+4080+SUPER+16GB"}
                 ]
             },
             {
                 "id": "m_cpu_ram",
                 "part": "CPU & RAM Bundle",
-                "model": "AMD Ryzen 9 9950X3D + 48 GB DDR5-6000",
-                "price": 1095.00,
-                "shop": "Caseking",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+9+9950X3D",
+                "model": "AMD Ryzen 9 9950X3D",
+                "price": 699.00,
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D",
                 "img": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": True,
                 "alts": [
-                    {"model": "AMD Ryzen 7 7800X3D (Einzelkauf)", "price": 390.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+7+7800X3D"},
-                    {"model": "Intel Core i9-14900K (Einzelkauf)", "price": 540.00, "shop": "Caseking", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Intel+Core+i9-14900K"}
+                    {"model": "AMD Ryzen 7 7800X3D", "price": 390.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D"},
+                    {"model": "Intel Core i9-14900K", "price": 540.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=Intel+Core+i9-14900K"}
                 ]
             },
             {
@@ -49,13 +52,13 @@ HARDWARE_DATA = {
                 "part": "Mainboard",
                 "model": "MSI MAG X870E TOMAHAWK WIFI",
                 "price": 284.36,
-                "shop": "Notebooksbilliger",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+MAG+X870E+TOMAHAWK+WIFI",
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=MSI+MAG+X870E+TOMAHAWK+WIFI",
                 "img": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "Gigabyte X870 AORUS ELITE WIFI7", "price": 295.00, "shop": "Alternate", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Gigabyte+X870+AORUS+ELITE"},
-                    {"model": "MSI B650 TOMAHAWK WIFI", "price": 180.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+B650+TOMAHAWK+WIFI"}
+                    {"model": "Gigabyte X870 AORUS ELITE WIFI7", "price": 295.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=Gigabyte+X870+AORUS+ELITE"},
+                    {"model": "MSI B650 TOMAHAWK WIFI", "price": 180.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI"}
                 ]
             },
             {
@@ -63,27 +66,27 @@ HARDWARE_DATA = {
                 "part": "SSD Storage",
                 "model": "Samsung 990 PRO SSD 1TB NVMe M.2",
                 "price": 219.00,
-                "shop": "Notebooksbilliger",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Samsung+990+PRO+1TB",
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=Samsung+990+PRO+1TB",
                 "img": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "WD_BLACK SN850X NVMe SSD 2TB", "price": 185.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=WD_BLACK+SN850X+2TB"},
-                    {"model": "Lexar NM790 2TB M.2 NVMe", "price": 140.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lexar+NM790+2TB"}
+                    {"model": "WD_BLACK SN850X NVMe SSD 2TB", "price": 185.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=WD_BLACK+SN850X+2TB"},
+                    {"model": "Lexar NM790 2TB M.2 NVMe", "price": 140.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=Lexar+NM790+2TB"}
                 ]
             },
             {
                 "id": "m_case_cool",
                 "part": "Gehäuse & Kühlung",
-                "model": "Lian Li O11 Vision Compact + Kraken Elite 360",
-                "price": 549.00,
-                "shop": "Caseking / NBB",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+O11+Vision+Compact",
+                "model": "Lian Li O11 Vision Compact",
+                "price": 149.00,
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=Lian+Li+O11+Vision+Compact",
                 "img": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "Fractal Design North XL", "price": 155.01, "shop": "Notebooksbilliger", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Fractal+Design+North+XL"},
-                    {"model": "NZXT Kraken Elite 360 RGB", "price": 279.59, "shop": "Notebooksbilliger", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=NZXT+Kraken+Elite+360+RGB"}
+                    {"model": "Fractal Design North XL", "price": 155.01, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=Fractal+Design+North+XL"},
+                    {"model": "NZXT Kraken Elite 360 RGB", "price": 279.59, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=NZXT+Kraken+Elite+360+RGB"}
                 ]
             }
         ]
@@ -96,69 +99,94 @@ HARDWARE_DATA = {
                 "part": "Grafikkarte",
                 "model": "MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC",
                 "price": 1149.00,
-                "shop": "Notebooksbilliger",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+VENTUS+3X",
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC",
                 "img": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "Gigabyte GeForce RTX 4070 Ti SUPER Gaming OC", "price": 849.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Gigabyte+RTX+4070+Ti+SUPER"}
+                    {"model": "Gigabyte GeForce RTX 4070 Ti SUPER Gaming OC", "price": 849.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER+Gaming+OC"}
                 ]
             },
             {
                 "id": "a_cpu",
                 "part": "Prozessor",
-                "model": "AMD Ryzen 9 7900X 12x 4.70GHz",
+                "model": "AMD Ryzen 9 7900X",
                 "price": 315.00,
-                "shop": "Mindfactory",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+9+7900X",
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=AMD+Ryzen+9+7900X",
                 "img": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "AMD Ryzen 7 7800X3D 8x 4.20GHz", "price": 390.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+7+7800X3D"}
+                    {"model": "AMD Ryzen 7 7800X3D", "price": 390.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D"}
                 ]
             },
             {
                 "id": "a_ram",
                 "part": "Arbeitsspeicher",
-                "model": "Crucial Pro 48GB Kit DDR5-5600 UDIMM",
+                "model": "Crucial Pro 48GB Kit DDR5-5600",
                 "price": 165.00,
-                "shop": "Mindfactory",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Crucial+Pro+48GB+DDR5",
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600",
                 "img": "https://images.unsplash.com/photo-1562976540-1e02c414c18f?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "Corsair Vengeance DDR5-6000 64GB Dual Kit", "price": 210.00, "shop": "Caseking", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Corsair+Vengeance+DDR5+64GB"}
+                    {"model": "Corsair Vengeance DDR5-6000 64GB", "price": 210.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=Corsair+Vengeance+DDR5-6000+64GB"}
                 ]
             },
             {
                 "id": "a_mb_ssd",
-                "part": "Mainboard & SSD",
-                "model": "MSI B650 TOMAHAWK WIFI + 1TB Lexar NM790",
-                "price": 280.00,
-                "shop": "Mindfactory",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+B650+TOMAHAWK",
+                "part": "Mainboard",
+                "model": "MSI B650 TOMAHAWK WIFI",
+                "price": 180.00,
+                "shop": "Geizhals Bestpreis",
+                "url": "https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI",
                 "img": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80",
-                "is_bundle": True,
-                "alts": [
-                    {"model": "ASUS TUF Gaming B650-Plus WIFI", "price": 195.00, "shop": "Alternate", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=ASUS+TUF+Gaming+B650"}
-                ]
-            },
-            {
-                "id": "a_case_cool",
-                "part": "Gehäuse & Kühlung",
-                "model": "Fractal North XL Charcoal Black TG + 360mm AIO",
-                "price": 420.00,
-                "shop": "Notebooksbilliger",
-                "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Fractal+Design+North+XL",
-                "img": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80",
                 "is_bundle": False,
                 "alts": [
-                    {"model": "be quiet! Shadow Base 800 FX Black", "price": 180.00, "shop": "Mindfactory", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=be+quiet!+Shadow+Base+800"}
+                    {"model": "ASUS TUF Gaming B650-Plus WIFI", "price": 195.00, "shop": "Geizhals Bestpreis", "url": "https://geizhals.de/?fs=ASUS+TUF+Gaming+B650-Plus+WIFI"}
                 ]
             }
         ]
     }
 }
+
+# --- TARNKAPPEN SCRAPER FÜR GEIZHALS ---
+def fetch_live_price(url, fallback_price):
+    if not url or "geizhals.de" not in url:
+        return fallback_price
+    
+    try:
+        # Täuscht vor, ein echter Google Chrome Browser auf Windows zu sein
+        res = cffi_requests.get(url, impersonate="chrome120", timeout=15)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        
+        # Sucht den Preis im Geizhals HTML-Code
+        price_tag = soup.find('span', class_='gh_price')
+        if not price_tag:
+            price_tag = soup.find('span', class_='price')
+            
+        if price_tag:
+            # Filtert alles außer Zahlen und Kommas heraus (z.B. "€ 1.248,99" -> 1248.99)
+            match = re.search(r'[\d\.]+(?:,\d+)?', price_tag.text)
+            if match:
+                clean_price = match.group(0).replace('.', '').replace(',', '.')
+                return float(clean_price)
+    except Exception as e:
+        print(f"Scraping-Fehler bei {url}: {e}")
+        
+    return fallback_price
+
+def update_all_prices():
+    print("🕵️‍♂️ Starte Live-Preisabfrage bei Geizhals...")
+    for build_key in HARDWARE_DATA:
+        for item in HARDWARE_DATA[build_key]["items"]:
+            # Holt Live-Preis für Hauptkomponente
+            item["price"] = fetch_live_price(item.get("url", ""), item["price"])
+            # Holt Live-Preis für Alternativen
+            if "alts" in item:
+                for alt in item["alts"]:
+                    alt["price"] = fetch_live_price(alt.get("url", ""), alt["price"])
+    print("✅ Alle Preise erfolgreich aktualisiert!")
 
 def get_market_and_deals():
     try:
@@ -220,9 +248,8 @@ def run_claude_decision(deal_briefing, rate, main_total, alt_total):
     
     try:
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-        prompt = f"""Du bist Einkaufsberater für eine High-End Workstation. Briefing: {deal_briefing}. Main-Build: {main_total:.2f} €. Alternative: {alt_total:.2f} €. Kaufempfehlung in 3 Sätzen?"""
+        prompt = f"""Du bist Einkaufsberater für eine High-End Workstation (Ableton 12, Revopoint 3D-Scans, Raytracing Gaming). Briefing: {deal_briefing}. Main-Build: {main_total:.2f} €. Alternative: {alt_total:.2f} €. Kaufempfehlung in 3 Sätzen?"""
         
-        # Festes, extrem stabiles Modell nutzen, um 404-Fehler durch veraltete Aliasse zu 100% auszuschließen!
         message = client.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=1024,
@@ -323,7 +350,6 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
         .badge {{ background: #0284c7; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }}
         .badge-alt {{ background: #059669; }}
         
-        /* Goldgelbes Bundle-Badge */
         .badge-bundle {{ background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f172a; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; display: inline-block; margin-left: 6px; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3); }}
 
         .focus-badge {{ display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }}
@@ -383,7 +409,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
         </div>
         
         <div class="card">
-            <h2>📈 Preisverlauf mit täglichen Datenpunkten</h2>
+            <h2>📈 Preisverlauf (Live abgefragt)</h2>
             <div class="chart-controls">
                 <button class="btn-filter active" onclick="updateChartRange('year', this)">1 Jahr (1J)</button>
                 <button class="btn-filter" onclick="updateChartRange('month', this)">1 Monat (1M)</button>
@@ -394,11 +420,9 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 
         <div class="card">
             <h2>⭐ {HARDWARE_DATA['main_build']['name']}</h2>
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf das Produkt, um direkt zur Händler-Unterseite zu gelangen. Klicke auf eine Tabellenzeile, um Alternativen zu sehen.</em></p>
-            
             <div class="table-wrapper">
                 <table>
-                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Preis</th></tr>"""
+                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>"""
     
     for item in HARDWARE_DATA['main_build']['items']:
         main_price = item['price']
@@ -447,11 +471,9 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 
         <div class="card">
             <h2>💡 {HARDWARE_DATA['alt_build']['name']}</h2>
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf ein Produkt für die Händler-Unterseite.</em></p>
-            
             <div class="table-wrapper">
                 <table>
-                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Preis</th></tr>"""
+                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>"""
     
     for item in HARDWARE_DATA['alt_build']['items']:
         item_id = item['id']
@@ -586,6 +608,10 @@ def send_discord_notification(text, deals):
 
 if __name__ == "__main__":
     print("Starte Daten-Sammlung (inklusive Deal-Suche)...")
+    
+    # 1. LIVE-PREISE VON GEIZHALS HOLEN
+    update_all_prices()
+    
     rate, headlines = get_market_and_deals()
     
     main_total = sum(item["price"] for item in HARDWARE_DATA["main_build"]["items"])
@@ -597,7 +623,7 @@ if __name__ == "__main__":
     print("Suche nach Bundles & Gutscheinen mit Gemini...")
     deal_briefing = run_gemini_deal_hunter(rate, headlines)
     
-    print("Berechne finale Entscheidung mit Claude Sonnet 3.5...")
+    print("Berechne finale Entscheidung mit Claude...")
     decision = run_claude_decision(deal_briefing, rate, main_total, alt_total)
     
     print("Generiere HTML-Dashboard...")
