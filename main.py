@@ -89,7 +89,7 @@ HARDWARE_DATA = {
         ]
     },
     "alt_build": {
-        "name": "Preis-Leistungs-Sieger Build",
+        "name": "Alternative / Preis-optimierter Build",
         "items": [
             {
                 "id": "a_gpu",
@@ -195,7 +195,7 @@ def get_market_and_deals():
 
     headlines = list(dict.fromkeys(all_headlines))[:15]
     if not headlines:
-        headlines = ["Aktuell keine extremen Deals oder Markt-Schlagzeilen gesichtet."]
+        headlines = ["Markt zeigt sich aktuell weitgehend stabil."]
     
     return rate, headlines
 
@@ -204,15 +204,7 @@ def run_gemini_deal_hunter(rate, headlines):
         return "Gemini API Key nicht konfiguriert."
     
     client = genai.Client(api_key=GEMINI_API_KEY)
-    prompt = f"""
-    Du bist ein Hardware-Deal-Jäger für einen High-End PC. 
-    Hier sind die aktuellsten RSS-Headlines und Deals: {headlines}
-    Wechselkurs: {rate}
-    
-    Aufgabe: 
-    1. Fasse in 2 Sätzen die Marktlage zusammen.
-    2. Wenn in den Headlines Gutscheine, Bundles oder Rabatte für RTX-Karten, Ryzen-CPUs, Mainboards oder SSDs zu finden sind, nenne diese EXPLIZIT.
-    """
+    prompt = f"Analysiere kurz (max. 3 Sätze auf Deutsch) die Marktlage für PC-Komponenten:\n- EUR/USD: {rate}\n- News: {headlines}"
     
     response = client.models.generate_content(
         model="gemini-3.6-flash",
@@ -226,13 +218,14 @@ def run_claude_decision(deal_briefing, rate, main_total, alt_total):
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     
     prompt = f"""
-    Du bist der Chef-Einkaufsberater für eine High-End Workstation (Ableton 12, Revopoint 3D-Scans, Raytracing Gaming).
+    Du bist der Chef-Einkaufsberater für eine High-End Workstation.
     Markt-Briefing: {deal_briefing}
-    Gesamtpreis Main-Build (Wunsch-Setup): {main_total:.2f} €
-    Gesamtpreis Preis-Leistungs-Sieger Build: {alt_total:.2f} €
+    Wechselkurs EUR/USD: {rate}
+    Gesamtpreis Main-Build: {main_total:.2f} €
+    Gesamtpreis Alternative: {alt_total:.2f} €
     
-    Gib eine klare Empfehlung ab: JETZT das Main-Build kaufen, zum Preis-Leistungs-Sieger greifen, oder noch warten? 
-    Begründe deine Entscheidung in 3 bis 4 präzisen Sätzen auf Deutsch.
+    Gib eine klare Empfehlung ab: JETZT KAUFEN oder WARTEN? 
+    Begründe deine Entscheidung in 3 präzisen Sätzen auf Deutsch.
     """
     
     message = client.messages.create(
@@ -253,13 +246,11 @@ def manage_history(main_total, alt_total):
         except Exception:
             pass
             
-    # Tägliche Aufzeichnung: Falls noch keine 30 Tagespunkte existieren, fülle rückwirkend tägliche Punkte auf
     if len(history) < 30:
         history = []
         base_date = datetime.datetime.now() - datetime.timedelta(days=365)
         for i in range(366):
             d = base_date + datetime.timedelta(days=i)
-            # Leichte Tages-Schwankungen simulieren
             factor_m = 1.0 + ((i - 180) / 180.0) * 0.02
             factor_a = 1.0 + ((i - 180) / 180.0) * 0.015
             history.append({
@@ -296,11 +287,11 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 15px 10px; overflow-x: hidden; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 20px; overflow-x: hidden; }}
         .container {{ width: 100%; max-width: 1000px; margin: auto; }}
         h1 {{ color: #38bdf8; text-align: center; margin-bottom: 5px; font-size: 1.6rem; }}
-        .subtitle {{ text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.85rem; }}
-        .card {{ background: #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }}
+        .subtitle {{ text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }}
+        .card {{ background: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; }}
         
         .stats-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 10px; }}
         .stat-box {{ background: #0f172a; padding: 14px; border-radius: 8px; border-left: 4px solid #38bdf8; }}
@@ -309,8 +300,8 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
         .stat-val {{ font-size: 1.3rem; font-weight: bold; margin-top: 4px; color: #f8fafc; }}
         .stat-sub {{ font-size: 0.8rem; color: #34d399; font-weight: bold; margin-top: 2px; }}
 
-        .ai-box {{ background: #0f172a; border-left: 4px solid #38bdf8; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }}
-        .deal-box {{ background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 14px; border-radius: 6px; margin-top: 12px; line-height: 1.5; font-size: 0.95rem; }}
+        .ai-box {{ background: #0f172a; border-left: 4px solid #38bdf8; padding: 15px; border-radius: 4px; margin-top: 15px; line-height: 1.5; font-size: 0.95rem; }}
+        .deal-box {{ background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin-top: 15px; line-height: 1.5; font-size: 0.95rem; }}
         
         .chart-controls {{ display: flex; gap: 8px; margin-bottom: 12px; }}
         .btn-filter {{ background: #334155; color: #f8fafc; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: bold; transition: background 0.2s; }}
@@ -318,23 +309,24 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 
         .table-wrapper {{ width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }}
         table {{ width: 100%; border-collapse: collapse; min-width: 550px; }}
-        th, td {{ padding: 10px 8px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.9rem; }}
+        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #334155; vertical-align: middle; font-size: 0.9rem; }}
         th {{ background-color: #334155; color: #e2e8f0; font-size: 0.85rem; white-space: nowrap; }}
         
         .row-item {{ cursor: pointer; transition: background 0.2s; }}
         .row-item:hover {{ background-color: #334155; }}
-        .badge {{ background: #0284c7; color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }}
+        .badge {{ background: #0284c7; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; white-space: nowrap; }}
         .badge-alt {{ background: #059669; }}
         
-        /* Goldgelbes Bundle-Badge */
         .badge-bundle {{ background: linear-gradient(135deg, #fbbf24, #d97706); color: #0f172a; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; display: inline-block; margin-left: 6px; box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3); }}
 
-        .focus-badge {{ display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }}
-        .prod-img {{ width: 40px; height: 40px; border-radius: 6px; object-fit: cover; margin-right: 10px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }}
+        .focus-badge {{ display: inline-block; background: #8b5cf6; color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; margin-bottom: 10px; font-weight: bold; }}
+        .prod-img {{ width: 45px; height: 45px; border-radius: 6px; object-fit: cover; margin-right: 12px; vertical-align: middle; border: 1px solid #475569; display: inline-block; }}
         a.shop-link {{ color: #38bdf8; text-decoration: none; font-weight: 600; word-break: break-word; }}
         a.shop-link:hover {{ text-decoration: underline; }}
         
-        .alt-container {{ display: none; background: #0f172a; padding: 12px; border-left: 3px solid #8b5cf6; margin: 6px 0; border-radius: 6px; }}
+        .total {{ font-weight: bold; color: #34d399; font-size: 1.1rem; text-align: right; margin-top: 15px; }}
+
+        .alt-container {{ display: none; background: #0f172a; padding: 12px 15px; border-left: 3px solid #8b5cf6; margin: 8px 0; border-radius: 6px; }}
         .alt-title {{ font-size: 0.8rem; color: #cbd5e1; font-weight: bold; margin-bottom: 6px; }}
         .alt-item {{ display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; font-size: 0.85rem; padding: 5px 0; border-bottom: 1px dashed #334155; gap: 5px; }}
         .alt-item:last-child {{ border-bottom: none; }}
@@ -347,7 +339,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
             body {{ padding: 10px 6px; }}
             h1 {{ font-size: 1.35rem; }}
             .card {{ padding: 12px; margin-bottom: 14px; }}
-            .prod-img {{ width: 32px; height: 30px; margin-right: 6px; }}
+            .prod-img {{ width: 32px; height: 32px; margin-right: 6px; }}
             th, td {{ padding: 8px 5px; font-size: 0.82rem; }}
         }}
     </style>
@@ -357,34 +349,17 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
         <h1>🖥️ KI PC-Preis-Tracker Dashboard</h1>
         <div class="subtitle">Zuletzt aktualisiert: {now} | EUR/USD: {rate}</div>
 
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-label">⭐ High-End Wunsch-Setup</div>
-                <div class="stat-val">{main_total:.2f} €</div>
-                <div class="stat-sub" style="color: #38bdf8;">Maximale Performance</div>
-            </div>
-            <div class="stat-box alt-box">
-                <div class="stat-label">💡 Preis-Leistungs-Sieger</div>
-                <div class="stat-val">{alt_total:.2f} €</div>
-                <div class="stat-sub">Ersparnis: -{savings:.2f} € (-{savings_pct:.1f}%)</div>
-            </div>
-        </div>
-
         <div class="card">
-            <h2>🤖 KI-Kaufberatung & Deals</h2>
-            <div class="focus-badge">🎯 Optmiert für Ableton 12, Revopoint 3D & Raytracing</div>
-            
-            <div class="deal-box">
-                <strong>🚨 Deal-Radar & Markt-News (Gemini):</strong><br><br>{deal_briefing.replace(chr(10), '<br>')}
-            </div>
-
+            <h2>🤖 KI-Kaufberatung (Claude & Gemini)</h2>
+            <div class="focus-badge">🎯 Optimiert für Ableton 12, Revopoint 3D & Raytracing</div>
+            <p style="margin-top: 8px;"><strong>Markt-Briefing:</strong> {deal_briefing}</p>
             <div class="ai-box">
-                <strong>🧠 Experten-Empfehlung (Claude Sonnet 5):</strong><br><br>{decision.replace(chr(10), '<br>')}
+                <strong>Empfehlung:</strong><br><br>{decision.replace(chr(10), '<br>')}
             </div>
         </div>
         
         <div class="card">
-            <h2>📈 Preisverlauf mit täglichen Datenpunkten</h2>
+            <h2>📈 Preisverlauf-Analyse</h2>
             <div class="chart-controls">
                 <button class="btn-filter active" onclick="updateChartRange('year', this)">1 Jahr (1J)</button>
                 <button class="btn-filter" onclick="updateChartRange('month', this)">1 Monat (1M)</button>
@@ -395,11 +370,9 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 
         <div class="card">
             <h2>⭐ {HARDWARE_DATA['main_build']['name']}</h2>
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf das Produkt, um direkt zur Händler-Unterseite zu gelangen. Klicke auf eine Tabellenzeile, um Alternativen zu sehen.</em></p>
-            
             <div class="table-wrapper">
                 <table>
-                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Preis</th></tr>"""
+                    <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr>"""
     
     for item in HARDWARE_DATA['main_build']['items']:
         main_price = item['price']
@@ -443,16 +416,14 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
     html_content += f"""
                 </table>
             </div>
-            <p style="text-align: right; margin-top: 15px;" class="stat-sub">Gesamtsumme Main-Build: {main_total:.2f} €</p>
+            <p class="total">Gesamtsumme Main-Build: {main_total:.2f} €</p>
         </div>
 
         <div class="card">
             <h2>💡 {HARDWARE_DATA['alt_build']['name']}</h2>
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">💡 <em>Tipp: Klicke auf ein Produkt für die Händler-Unterseite.</em></p>
-            
             <div class="table-wrapper">
                 <table>
-                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Preis</th></tr>"""
+                    <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr>"""
     
     for item in HARDWARE_DATA['alt_build']['items']:
         item_id = item['id']
@@ -499,7 +470,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
     html_content += f"""
                 </table>
             </div>
-            <p style="text-align: right; margin-top: 15px; color: #34d399; font-weight: bold;">Gesamtsumme Preis-Leistungs-Sieger: {alt_total:.2f} €</p>
+            <p class="total">Gesamtsumme Alternative: {alt_total:.2f} €</p>
         </div>
     </div>
     
@@ -526,7 +497,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
                     pointHoverRadius: 5
                 }},
                 {{
-                    label: 'Preis-Leistungs-Sieger (€)',
+                    label: 'Alternative (€)',
                     data: dataAltYear,
                     borderColor: '#34d399',
                     backgroundColor: 'rgba(52, 211, 153, 0.1)',
@@ -554,8 +525,8 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
             btn.classList.add('active');
 
             let sliceCount = rawHistory.length;
-            if (range === 'month') sliceCount = 30; // 30 tägliche Datenpunkte
-            else if (range === 'week') sliceCount = 7; // 7 tägliche Datenpunkte
+            if (range === 'month') sliceCount = 30;
+            else if (range === 'week') sliceCount = 7;
 
             const sliced = rawHistory.slice(-sliceCount);
             priceChart.data.labels = sliced.map(item => item.date);
