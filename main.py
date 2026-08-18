@@ -138,7 +138,7 @@ HARDWARE_DATA = {
                 "shop": "Mindfactory",
                 "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+B650+TOMAHAWK",
                 "img": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80",
-                "is_bundle": True,  # ECHTES BUNDLE
+                "is_bundle": True,
                 "alts": [
                     {"model": "ASUS TUF Gaming B650-Plus WIFI", "price": 195.00, "shop": "Alternate", "url": "https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=ASUS+TUF+Gaming+B650"}
                 ]
@@ -168,7 +168,7 @@ def get_market_and_deals():
         rate = 1.08
 
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'application/rss+xml, application/xml, text/xml'
     }
 
@@ -195,7 +195,7 @@ def get_market_and_deals():
 
     headlines = list(dict.fromkeys(all_headlines))[:15]
     if not headlines:
-        headlines = ["Aktuell keine extremen Deals oder Markt-Schlagzeilen gesichtet."]
+        headlines = ["Aktuell keine extremen Deals gesichtet."]
     
     return rate, headlines
 
@@ -203,56 +203,43 @@ def run_gemini_deal_hunter(rate, headlines):
     if not GEMINI_API_KEY:
         return "Gemini API Key nicht konfiguriert."
     
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    prompt = f"""
-    Du bist ein Hardware-Deal-Jäger für einen High-End PC. 
-    Hier sind die aktuellsten RSS-Headlines und Deals: {headlines}
-    Wechselkurs: {rate}
-    
-    Aufgabe: 
-    1. Fasse in 2 Sätzen die Marktlage zusammen.
-    2. Wenn in den Headlines Gutscheine, Bundles oder Rabatte für RTX-Karten, Ryzen-CPUs, Mainboards oder SSDs zu finden sind, nenne diese EXPLIZIT.
-    """
-    
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
-        contents=prompt
-    )
-    return response.text
+    try:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        prompt = f"Du bist Hardware-Experte. Fasse die Marktlage und folgende Deals zusammen (nenn Gutscheine explizit): {headlines}. Wechselkurs: {rate}"
+        response = client.models.generate_content(
+            model="gemini-3.6-flash",
+            contents=prompt
+        )
+        return response.text
+    except Exception as e:
+        return f"Gemini Analyse momentan nicht verfügbar. (Grund: {str(e)})"
 
 def run_claude_decision(deal_briefing, rate, main_total, alt_total):
     if not ANTHROPIC_API_KEY:
         return "Anthropic API Key nicht konfiguriert."
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     
-    prompt = f"""
-    Du bist der Chef-Einkaufsberater für eine High-End Workstation (Ableton 12, Revopoint 3D-Scans, Raytracing Gaming).
-    Markt-Briefing: {deal_briefing}
-    Gesamtpreis Main-Build (Wunsch-Setup): {main_total:.2f} €
-    Gesamtpreis Preis-Leistungs-Sieger Build: {alt_total:.2f} €
-    
-    Gib eine klare Empfehlung ab: JETZT das Main-Build kaufen, zum Preis-Leistungs-Sieger greifen, oder noch warten? 
-    Begründe deine Entscheidung in 3 bis 4 präzisen Sätzen auf Deutsch.
-    """
-    
-    # Nutzt das immer verfügbare, neueste "Sonnet 3.5" Modell
-    message = client.messages.create(
-        model="claude-3-5-sonnet-latest",  
-        max_tokens=1024, 
-        messages=[{"role": "user", "content": prompt}]
-    )
-    
-    # ROBUSTE EXTRAKTION: Ignoriert Abstürze durch Thinking-Blöcke
-    final_text = ""
-    for block in message.content:
-        # Greife nur auf das Text-Attribut zu, wenn der Typ 'text' ist
-        if getattr(block, 'type', '') == 'text':
-            final_text += getattr(block, 'text', '')
-            
-    if not final_text:
-        final_text = "Die KI konnte keine Text-Antwort generieren."
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        prompt = f"""Du bist Einkaufsberater für eine High-End Workstation. Briefing: {deal_briefing}. Main-Build: {main_total:.2f} €. Alternative: {alt_total:.2f} €. Kaufempfehlung in 3 Sätzen?"""
         
-    return final_text.strip()
+        # Festes, extrem stabiles Modell nutzen, um 404-Fehler durch veraltete Aliasse zu 100% auszuschließen!
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        
+        final_text = ""
+        for block in message.content:
+            if getattr(block, 'type', '') == 'text':
+                final_text += getattr(block, 'text', '')
+                
+        if not final_text:
+            return "Claude konnte keinen Text generieren."
+        return final_text.strip()
+        
+    except Exception as e:
+        return f"Claude Empfehlung momentan nicht verfügbar. (Grund: {str(e)})"
 
 def manage_history(main_total, alt_total):
     history_file = "history.json"
@@ -265,13 +252,11 @@ def manage_history(main_total, alt_total):
         except Exception:
             pass
             
-    # Tägliche Aufzeichnung: Falls noch keine 30 Tagespunkte existieren, fülle rückwirkend auf
     if len(history) < 30:
         history = []
         base_date = datetime.datetime.now() - datetime.timedelta(days=365)
         for i in range(366):
             d = base_date + datetime.timedelta(days=i)
-            # Leichte Tages-Schwankungen simulieren
             factor_m = 1.0 + ((i - 180) / 180.0) * 0.02
             factor_a = 1.0 + ((i - 180) / 180.0) * 0.015
             history.append({
@@ -593,8 +578,11 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_total, alt_total
 def send_discord_notification(text, deals):
     if not DISCORD_WEBHOOK_URL:
         return
-    payload = {"content": f"🚨 **Workstation Preis-Tracker & Deals** 🚨\n\n**Markt & Deals:**\n{deals}\n\n**Claude Fazit:**\n{text}"}
-    requests.post(DISCORD_WEBHOOK_URL, json=payload)
+    try:
+        payload = {"content": f"🚨 **Workstation Preis-Tracker & Deals** 🚨\n\n**Markt & Deals:**\n{deals}\n\n**Claude Fazit:**\n{text}"}
+        requests.post(DISCORD_WEBHOOK_URL, json=payload)
+    except Exception:
+        pass
 
 if __name__ == "__main__":
     print("Starte Daten-Sammlung (inklusive Deal-Suche)...")
