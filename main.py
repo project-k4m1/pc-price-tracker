@@ -15,43 +15,70 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 
-# Strukturierte Hardware-Matrix mit präzisen Suchparametern
+# Strukturierte Hardware-Matrix mit präzisen Suchparametern und gemappten Alternativen
 HARDWARE_DATA = {
     "main_build": {
-        "name": "High-End Workstation (Black Showcase)",
+        "name": "Ultra-Clean Showcase (Black Edition)",
         "components": [
-            {"id": "m_cpu", "type": "Prozessor (CPU)", "model": "AMD Ryzen 9 9950X3D", "price": 720.00, "url": "https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D+ohne+Kuehler"},
-            {"id": "m_mb", "type": "Mainboard", "model": "MSI MAG X870E TOMAHAWK WIFI", "price": 284.00, "url": "https://geizhals.de/?fs=MSI+MAG+X870E+TOMAHAWK+WIFI"},
-            {"id": "m_ram", "type": "Arbeitsspeicher (RAM)", "model": "ADATA XPG Lancer Blade RGB 48GB DDR5-6000", "price": 165.00, "url": "https://geizhals.de/?fs=ADATA+XPG+Lancer+Blade+RGB+48GB+DDR5-6000"},
-            {"id": "m_gpu", "type": "Grafikkarte (GPU)", "model": "ASUS TUF Gaming GeForce RTX 5070 Ti 16GB", "price": 1149.00, "url": "https://geizhals.de/?fs=ASUS+TUF+Gaming+GeForce+RTX+5070+Ti+16GB"},
-            {"id": "m_ssd", "type": "Festplatte (SSD)", "model": "Samsung 990 PRO 1TB M.2", "price": 165.00, "url": "https://geizhals.de/?fs=Samsung+990+PRO+1TB+M.2"},
-            {"id": "m_psu", "type": "Netzteil", "model": "be quiet! Straight Power 12 1000W", "price": 160.00, "url": "https://geizhals.de/?fs=be+quiet!+Straight+Power+12+1000W"},
-            {"id": "m_cool", "type": "CPU-Kühler", "model": "Lian Li Hydroshift LCD 360S Black", "price": 180.00, "url": "https://geizhals.de/?fs=Lian+Li+Hydroshift+LCD+360S+Black"},
-            {"id": "m_case", "type": "Gehäuse", "model": "HAVN HS420 VGPU Black", "price": 265.00, "url": "https://geizhals.de/?fs=HAVN+HS420+VGPU+Black"},
-            {"id": "m_fan", "type": "Gehäuselüfter", "model": "Lian Li UNI FAN Wireless 120 (3er Pack)", "price": 125.00, "url": "https://geizhals.de/?fs=Lian+Li+UNI+FAN+Wireless+120"}
+            {
+                "id": "m_cpu", "type": "Prozessor (CPU)", "model": "AMD Ryzen 9 9950X3D", "price": 720.00, "url": "https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D", "is_bundle": True,
+                "alts": [{"model": "AMD Ryzen 7 7800X3D", "price": 389.00, "url": "https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D"}]
+            },
+            {
+                "id": "m_mb", "type": "Mainboard", "model": "MSI MAG X870E TOMAHAWK WIFI", "price": 284.00, "url": "https://geizhals.de/?fs=MSI+MAG+X870E+TOMAHAWK+WIFI", "is_bundle": False,
+                "alts": [{"model": "MSI MAG B650 TOMAHAWK WIFI", "price": 185.00, "url": "https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI"}]
+            },
+            {
+                "id": "m_ram", "type": "Arbeitsspeicher (RAM)", "model": "ADATA XPG Lancer Blade RGB 48GB DDR5-6000", "price": 165.00, "url": "https://geizhals.de/?fs=ADATA+XPG+Lancer+Blade+RGB+48GB+DDR5-6000", "is_bundle": True,
+                "alts": [{"model": "Crucial Pro 48GB Kit DDR5-5600", "price": 140.00, "url": "https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600"}]
+            },
+            {
+                "id": "m_gpu", "type": "Grafikkarte (GPU)", "model": "ASUS TUF Gaming GeForce RTX 5070 Ti 16GB", "price": 1149.00, "url": "https://geizhals.de/?fs=ASUS+TUF+Gaming+GeForce+RTX+5070+Ti+16GB", "is_bundle": False,
+                "alts": [{"model": "Gigabyte GeForce RTX 4070 Ti SUPER Windforce", "price": 849.00, "url": "https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER"}]
+            },
+            {
+                "id": "m_ssd", "type": "Festplatte (SSD)", "model": "Samsung 990 PRO 1TB M.2", "price": 165.00, "url": "https://geizhals.de/?fs=Samsung+990+PRO+1TB+M.2", "is_bundle": False,
+                "alts": [{"model": "Lexar NM790 2TB M.2", "price": 135.00, "url": "https://geizhals.de/?fs=Lexar+NM790+2TB"}]
+            },
+            {
+                "id": "m_psu", "type": "Netzteil", "model": "be quiet! Straight Power 12 1000W", "price": 160.00, "url": "https://geizhals.de/?fs=be+quiet!+Straight+Power+12+1000W", "is_bundle": False,
+                "alts": [{"model": "Corsair RM850e 850W", "price": 115.00, "url": "https://geizhals.de/?fs=Corsair+RM850e+850W"}]
+            },
+            {
+                "id": "m_cool", "type": "CPU-Kühler", "model": "Lian Li Hydroshift LCD 360S Black", "price": 180.00, "url": "https://geizhals.de/?fs=Lian+Li+Hydroshift+LCD+360S+Black", "is_bundle": False,
+                "alts": [{"model": "Arctic Liquid Freezer III 360", "price": 75.00, "url": "https://geizhals.de/?fs=Arctic+Liquid+Freezer+III+360"}]
+            },
+            {
+                "id": "m_case", "type": "Gehäuse", "model": "HAVN HS420 VGPU Black", "price": 265.00, "url": "https://geizhals.de/?fs=HAVN+HS420+VGPU+Black", "is_bundle": False,
+                "alts": [{"model": "Fractal Design North XL Charcoal Black", "price": 155.00, "url": "https://geizhals.de/?fs=Fractal+Design+North+XL+Charcoal"}]
+            },
+            {
+                "id": "m_fan", "type": "Gehäuselüfter", "model": "Lian Li UNI FAN Wireless 120 (3er)", "price": 125.00, "url": "https://geizhals.de/?fs=Lian+Li+UNI+FAN+Wireless+120", "is_bundle": False,
+                "alts": [{"model": "Arctic P14 PWM PST (3er Pack)", "price": 25.00, "url": "https://geizhals.de/?fs=Arctic+P14+PWM+PST+140mm"}]
+            }
         ],
         "bundles": [
             {
                 "id": "b_main_1",
-                "name": "Caseking: Ryzen 9 9950X3D + 48GB ADATA XPG",
+                "name": "Caseking Bundle: 9950X3D + 48GB XPG",
                 "contains": ["m_cpu", "m_ram"],
                 "bundle_price": 823.00,
-                "url": "https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D"
+                "url": "https://www.caseking.de/"
             }
         ]
     },
     "alt_build": {
         "name": "Preis-Leistungs-Sieger",
         "components": [
-            {"id": "a_cpu", "type": "Prozessor (CPU)", "model": "AMD Ryzen 7 7800X3D", "price": 389.00, "url": "https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D+ohne+Kuehler"},
-            {"id": "a_mb", "type": "Mainboard", "model": "MSI MAG B650 TOMAHAWK WIFI", "price": 185.00, "url": "https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI"},
-            {"id": "a_ram", "type": "Arbeitsspeicher (RAM)", "model": "Crucial Pro 48GB Kit DDR5-5600", "price": 140.00, "url": "https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600"},
-            {"id": "a_gpu", "type": "Grafikkarte (GPU)", "model": "Gigabyte GeForce RTX 4070 Ti SUPER Windforce", "price": 849.00, "url": "https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER"},
-            {"id": "a_ssd", "type": "Festplatte (SSD)", "model": "Lexar NM790 2TB M.2", "price": 135.00, "url": "https://geizhals.de/?fs=Lexar+NM790+2TB"},
-            {"id": "a_psu", "type": "Netzteil", "model": "Corsair RM850e 850W", "price": 115.00, "url": "https://geizhals.de/?fs=Corsair+RM850e+850W"},
-            {"id": "a_cool", "type": "CPU-Kühler", "model": "Arctic Liquid Freezer III 360", "price": 75.00, "url": "https://geizhals.de/?fs=Arctic+Liquid+Freezer+III+360"},
-            {"id": "a_case", "type": "Gehäuse", "model": "Fractal Design North XL Charcoal Black", "price": 155.00, "url": "https://geizhals.de/?fs=Fractal+Design+North+XL+Charcoal"},
-            {"id": "a_fan", "type": "Gehäuselüfter", "model": "Arctic P14 PWM PST (3er Pack)", "price": 25.00, "url": "https://geizhals.de/?fs=Arctic+P14+PWM+PST+140mm"}
+            {"id": "a_cpu", "type": "Prozessor (CPU)", "model": "AMD Ryzen 7 7800X3D", "price": 389.00, "url": "https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D", "alts": []},
+            {"id": "a_mb", "type": "Mainboard", "model": "MSI MAG B650 TOMAHAWK WIFI", "price": 185.00, "url": "https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI", "alts": []},
+            {"id": "a_ram", "type": "Arbeitsspeicher (RAM)", "model": "Crucial Pro 48GB Kit DDR5-5600", "price": 140.00, "url": "https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600", "alts": []},
+            {"id": "a_gpu", "type": "Grafikkarte (GPU)", "model": "Gigabyte GeForce RTX 4070 Ti SUPER Windforce", "price": 849.00, "url": "https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER", "alts": []},
+            {"id": "a_ssd", "type": "Festplatte (SSD)", "model": "Lexar NM790 2TB M.2", "price": 135.00, "url": "https://geizhals.de/?fs=Lexar+NM790+2TB", "alts": []},
+            {"id": "a_psu", "type": "Netzteil", "model": "Corsair RM850e 850W", "price": 115.00, "url": "https://geizhals.de/?fs=Corsair+RM850e+850W", "alts": []},
+            {"id": "a_cool", "type": "CPU-Kühler", "model": "Arctic Liquid Freezer III 360", "price": 75.00, "url": "https://geizhals.de/?fs=Arctic+Liquid+Freezer+III+360", "alts": []},
+            {"id": "a_case", "type": "Gehäuse", "model": "Fractal Design North XL Charcoal Black", "price": 155.00, "url": "https://geizhals.de/?fs=Fractal+Design+North+XL+Charcoal", "alts": []},
+            {"id": "a_fan", "type": "Gehäuselüfter", "model": "Arctic P14 PWM PST (3er Pack)", "price": 25.00, "url": "https://geizhals.de/?fs=Arctic+P14+PWM+PST+140mm", "alts": []}
         ],
         "bundles": []
     }
@@ -68,18 +95,17 @@ def fetch_live_price(url, fallback_price):
         
         # Finde alle Preise auf der Seite
         prices = soup.find_all('span', class_=['price', 'gh_price'])
-        
         valid_prices = []
         for p in prices:
             match = re.search(r'[\d\.]+(?:,\d+)?', p.text)
             if match:
                 clean_price = float(match.group(0).replace('.', '').replace(',', '.'))
-                # FILTER-LOGIK: Verhindert, dass Zubehör (z.B. 15€ Kabel statt 1000€ GPU) gescraped wird
-                if (fallback_price * 0.4) <= clean_price <= (fallback_price * 2.0):
+                # FILTER-LOGIK: Verhindert, dass 15€ Zubehör statt der GPU gescraped wird
+                if (fallback_price * 0.4) <= clean_price <= (fallback_price * 1.8):
                     valid_prices.append(clean_price)
         
         if valid_prices:
-            return min(valid_prices) # Nimmt den günstigsten, realistischen Preis
+            return min(valid_prices) # Nimmt den günstigsten, realistischen Preis!
             
     except Exception as e:
         print(f"Scraping-Fehler bei {url}: {e}")
@@ -91,6 +117,8 @@ def update_all_prices():
     for build_key in HARDWARE_DATA:
         for item in HARDWARE_DATA[build_key]["components"]:
             item["price"] = fetch_live_price(item.get("url", ""), item["price"])
+            for alt in item.get("alts", []):
+                alt["price"] = fetch_live_price(alt.get("url", ""), alt["price"])
     print("✅ Alle Preise erfolgreich aktualisiert!")
 
 def calculate_totals(build_data):
@@ -162,21 +190,21 @@ def manage_history(main_total, alt_total):
         except Exception:
             pass
             
-    # REALISTISCHE SCHWANKUNGEN SIMULIEREN (Random Walk)
+    # REALISTISCHE SCHWANKUNGEN SIMULIEREN
     if len(history) < 30:
         history = []
         base_date = datetime.datetime.now() - datetime.timedelta(days=365)
         
-        sim_main = main_total * 1.15 # Startete vor einem Jahr 15% teurer
+        sim_main = main_total * 1.15
         sim_alt = alt_total * 1.12
         
         for i in range(366):
             d = base_date + datetime.timedelta(days=i)
-            # Leichte zufällige Schwankungen pro Tag (-1.5% bis +1.0%)
+            # Leichte zufällige Schwankungen pro Tag
             sim_main = sim_main * random.uniform(0.985, 1.01)
             sim_alt = sim_alt * random.uniform(0.988, 1.01)
             
-            # Sanfter Trend Richtung heutigem Preis
+            # Trend Richtung heutigem echten Preis
             sim_main += (main_total - sim_main) * 0.05
             sim_alt += (alt_total - sim_alt) * 0.05
             
@@ -205,13 +233,13 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
     savings_pct = (savings / main_final_tot) * 100 if main_final_tot > 0 else 0
     history_json = json.dumps(history)
     
-    # HTML Aufbau (Exakt gemapped auf v0 CSS)
     html_content = f"""<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KI PC-Komponenten Preis-Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {{
@@ -271,15 +299,25 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
         th {{ color: var(--text-muted); font-weight: 500; font-size: 13px; text-transform: uppercase; }}
         tr:last-child td {{ border-bottom: none; }}
         
-        .comp-type {{ font-weight: 600; color: var(--accent); font-size: 13px; }}
+        .comp-type {{ font-weight: 600; color: var(--accent); font-size: 13px; width: 180px; }}
         .comp-name {{ font-weight: 500; color: var(--text); }}
-        .comp-price {{ font-weight: 700; }}
+        .comp-price {{ font-weight: 700; text-align: right; }}
         
-        .bundle-row {{ background: rgba(10, 132, 255, 0.05); }}
+        .bundle-row {{ background: rgba(10, 132, 255, 0.05); border-top: 2px solid var(--border); }}
         .bundle-badge {{ background: linear-gradient(135deg, #0a84ff, #5e5ce6); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 8px; }}
-        .savings-tag {{ color: var(--green); font-weight: 600; font-size: 13px; }}
+        .item-badge {{ background: var(--surface); border: 1px solid var(--border); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 8px; color: var(--accent); }}
+        .savings-tag {{ color: var(--green); font-weight: 600; font-size: 13px; text-align: right; }}
         
         canvas {{ max-height: 280px; width: 100% !important; }}
+
+        .alt-container {{ display: none; background: #0a0a0c; padding: 16px 20px; border-left: 3px solid #5e5ce6; margin: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }}
+        .alt-title {{ font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }}
+        .alt-item {{ display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px; font-size: 14px; }}
+        .alt-item:last-child {{ border-bottom: none; }}
+        .delta-cheap {{ color: var(--green); font-weight: 700; background: rgba(48, 209, 88, 0.1); padding: 2px 6px; border-radius: 4px; }}
+        .delta-expensive {{ color: #ff375f; font-weight: 700; background: rgba(255, 55, 95, 0.1); padding: 2px 6px; border-radius: 4px; }}
+        .row-item {{ cursor: pointer; transition: background 0.2s; }}
+        .row-item:hover {{ background-color: var(--surface); }}
 
         @media (max-width: 1024px) {{
             .layout {{ grid-template-columns: 1fr; }}
@@ -296,8 +334,6 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
                 <div class="brand-name">Pricing Deck</div>
             </div>
             <a class="nav-item active"><div class="dot"></div> Dashboard</a>
-            <a class="nav-item">System Architektur</a>
-            <a class="nav-item">Markt Analyse</a>
             
             <div style="margin-top: auto; padding: 14px; background: var(--surface-2); border-radius: 12px; font-size: 12px; color: var(--text-muted);">
                 Optimiert für<br><strong style="color: #fff; font-size: 14px;">Ableton & 3D-Scans</strong>
@@ -336,17 +372,43 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
             </div>
 
             <div class="card">
-                <div class="card-header">⭐ {main_data['name']} (Komponenten-Aufschlüsselung)</div>
+                <div class="card-header">⭐ {main_data['name']}</div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">💡 Klicke auf eine Tabellenzeile für direkte Hardware-Alternativen.</p>
                 <div class="table-wrapper">
                     <table>
-                        <tr><th>Kategorie</th><th>Hardware</th><th>Bestpreis (Geizhals)</th></tr>"""
+                        <tr><th>Kategorie</th><th>Hardware-Modell</th><th style="text-align: right;">Geizhals Bestpreis</th></tr>"""
     
     for item in main_data['components']:
+        b_badge = '<span class="item-badge">IN BUNDLE</span>' if item.get('is_bundle') else ''
         html_content += f"""
-                        <tr>
+                        <tr class="row-item" onclick="toggleAlt('{item['id']}')">
                             <td class="comp-type">{item['type']}</td>
-                            <td><a href="{item['url']}" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">{item['model']}</a></td>
+                            <td><a href="{item['url']}" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">{item['model']}</a>{b_badge}</td>
                             <td class="comp-price">{item['price']:.2f} €</td>
+                        </tr>
+                        <tr id="alt-row-{item['id']}">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-{item['id']}" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>"""
+        
+        for alt in item.get('alts', []):
+            delta = alt['price'] - item['price']
+            delta_str = f"{delta:+.2f} €"
+            delta_class = "delta-cheap" if delta <= 0 else "delta-expensive"
+            html_content += f"""
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="{alt['url']}" target="_blank" style="color: inherit; text-decoration: none;">{alt['model']} ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">{alt['price']:.2f} €</span>
+                                            <span class="{delta_class}">{delta_str}</span>
+                                        </div>
+                                    </div>"""
+                                
+        html_content += """
+                                </div>
+                            </td>
                         </tr>"""
     
     html_content += """
@@ -359,7 +421,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
                 <div class="card-header" style="margin-top: 24px; font-size: 15px;">📦 Aktive Bundle-Vorteile</div>
                 <div class="table-wrapper">
                     <table>
-                        <tr><th>Bundle-Name</th><th>Einzelpreis-Summe</th><th>Bundle-Preis</th><th>Ersparnis</th></tr>"""
+                        <tr><th>Bundle-Name</th><th>Einzelpreis-Summe</th><th>Bundle-Preis</th><th style="text-align: right;">Ersparnis</th></tr>"""
         for b in main_data['bundles']:
             html_content += f"""
                         <tr class="bundle-row">
@@ -378,7 +440,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
                 <div class="card-header">💡 {alt_data['name']}</div>
                 <div class="table-wrapper">
                     <table>
-                        <tr><th>Kategorie</th><th>Hardware</th><th>Bestpreis (Geizhals)</th></tr>"""
+                        <tr><th>Kategorie</th><th>Hardware-Modell</th><th style="text-align: right;">Geizhals Bestpreis</th></tr>"""
     
     for item in alt_data['components']:
         html_content += f"""
@@ -401,7 +463,7 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
         const rawHistory = {history_json};
         const ctx = document.getElementById('priceChart').getContext('2d');
         
-        new Chart(ctx, {{
+        let priceChart = new Chart(ctx, {{
             type: 'line',
             data: {{
                 labels: rawHistory.map(i => i.date).slice(-30),
@@ -429,6 +491,15 @@ def generate_html_dashboard(rate, deal_briefing, decision, main_data, alt_data, 
                 }}
             }}
         }});
+        
+        function toggleAlt(id) {{
+            const box = document.getElementById('alt-box-' + id);
+            if (box.style.display === 'block') {{
+                box.style.display = 'none';
+            }} else {{
+                box.style.display = 'block';
+            }}
+        }}
     </script>
 </body>
 </html>"""
