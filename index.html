@@ -2,12 +2,11 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KI PC-Komponenten Preis-Tracker</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* v0.dev High-End Design Integration */
         :root {
             --bg: #0a0a0c;
             --surface: #161618;
@@ -17,486 +16,427 @@
             --text-muted: #8e8e93;
             --accent: #0a84ff;
             --green: #30d158;
-            --radius: 16px;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            --radius: 20px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
-            padding: 20px 10px; 
-            overflow-x: hidden; 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
+            min-height: 100vh;
         }
-        .container { width: 100%; max-width: 1050px; margin: auto; }
-        h1 { color: #ffffff; text-align: center; margin-bottom: 5px; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
-        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 14px; font-weight: 500; }
+        .layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
         
-        .card { 
-            background: var(--surface); 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius); 
-            padding: 24px; 
-            margin-bottom: 24px; 
-            box-shadow: var(--shadow); 
-        }
-        .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #ffffff; }
+        /* Sidebar */
+        .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 32px 20px; display: flex; flex-direction: column; gap: 8px; }
+        .brand { display: flex; align-items: center; gap: 12px; padding: 0 12px 28px; }
+        .brand-logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #0a84ff, #5e5ce6); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4); }
+        .brand-name { font-size: 17px; font-weight: 600; }
+        .nav-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 12px; color: var(--text-muted); font-size: 15px; font-weight: 500; text-decoration: none; }
+        .nav-item.active { background: var(--surface-2); color: var(--text); }
+        .nav-item .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.7; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
-        .stat-box { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow); }
-        .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-        .stat-val { font-size: 32px; font-weight: 700; margin: 10px 0 6px; letter-spacing: -0.02em; color: var(--text); }
-        .stat-sub { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
-        .stat-sub.blue { background: rgba(10, 132, 255, 0.15); color: var(--accent); }
-        .stat-sub.green { background: rgba(48, 209, 88, 0.15); color: var(--green); }
+        /* Main Content */
+        .main { padding: 40px 48px; max-width: 1200px; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+        .topbar h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+        .topbar p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
+        
+        /* Stats */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 24px; }
+        .stat-label { font-size: 14px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; }
+        .stat-value { font-size: 30px; font-weight: 700; margin: 12px 0 8px; letter-spacing: -0.02em; }
+        .stat-change { font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px; background: rgba(48, 209, 88, 0.15); color: var(--green); }
+        .stat-change.blue { background: rgba(10, 132, 255, 0.15); color: var(--accent); }
 
-        .ai-box, .deal-box { padding: 18px; border-radius: 12px; margin-top: 15px; line-height: 1.6; font-size: 15px; font-weight: 400; }
-        .ai-box { background: var(--surface-2); border-left: 4px solid var(--accent); }
-        .deal-box { background: rgba(255, 159, 10, 0.1); border-left: 4px solid #ff9f0a; color: #ffb340; }
+        /* Info Boxes */
+        .ai-box { background: var(--surface-2); padding: 18px; border-radius: 12px; border-left: 4px solid var(--accent); line-height: 1.5; font-size: 14px; margin-bottom: 24px; }
         
-        .chart-controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-        .btn-filter { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-        .btn-filter.active, .btn-filter:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; border-radius: 8px; border: 1px solid var(--border); }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; background: var(--surface); }
-        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; font-weight: 500; }
-        th { background-color: var(--surface-2); color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; }
+        /* Tables */
+        .card-header { margin-bottom: 20px; font-size: 18px; font-weight: 600; color: #fff; }
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { color: var(--text-muted); font-weight: 500; font-size: 13px; text-transform: uppercase; }
         tr:last-child td { border-bottom: none; }
         
-        .row-item { cursor: pointer; transition: background 0.2s; }
-        .row-item:hover { background-color: var(--surface-2); }
-        .badge { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-        .badge-bundle { background: linear-gradient(135deg, #ff9f0a, #ff375f); color: #fff; border: none; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; margin-left: 8px; }
-        .focus-badge { display: inline-block; background: linear-gradient(135deg, #5e5ce6, #0a84ff); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; margin-bottom: 12px; font-weight: 600; }
+        .comp-type { font-weight: 600; color: var(--accent); font-size: 13px; width: 180px; }
+        .comp-name { font-weight: 500; color: var(--text); }
+        .comp-price { font-weight: 700; text-align: right; }
         
-        .prod-img { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; margin-right: 12px; vertical-align: middle; border: 1px solid var(--border); }
-        a.shop-link { color: var(--accent); text-decoration: none; font-weight: 600; transition: opacity 0.2s; }
-        a.shop-link:hover { opacity: 0.8; }
+        .bundle-row { background: rgba(10, 132, 255, 0.05); border-top: 2px solid var(--border); }
+        .bundle-badge { background: linear-gradient(135deg, #0a84ff, #5e5ce6); color: #fff; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 8px; }
+        .item-badge { background: var(--surface); border: 1px solid var(--border); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 8px; color: var(--accent); }
+        .savings-tag { color: var(--green); font-weight: 600; font-size: 13px; text-align: right; }
         
-        .total { font-weight: 700; font-size: 18px; text-align: right; margin-top: 20px; letter-spacing: -0.01em; }
+        canvas { max-height: 280px; width: 100% !important; }
 
         .alt-container { display: none; background: #0a0a0c; padding: 16px 20px; border-left: 3px solid #5e5ce6; margin: 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
         .alt-title { font-size: 13px; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
-        .alt-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+        .alt-item { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px; font-size: 14px; }
         .alt-item:last-child { border-bottom: none; }
         .delta-cheap { color: var(--green); font-weight: 700; background: rgba(48, 209, 88, 0.1); padding: 2px 6px; border-radius: 4px; }
         .delta-expensive { color: #ff375f; font-weight: 700; background: rgba(255, 55, 95, 0.1); padding: 2px 6px; border-radius: 4px; }
-        
-        canvas { max-height: 300px; width: 100% !important; margin-top: 10px; }
+        .row-item { cursor: pointer; transition: background 0.2s; }
+        .row-item:hover { background-color: var(--surface); }
 
-        @media (max-width: 640px) {
-            .main { padding: 20px; }
-            .stats-grid { grid-template-columns: 1fr; }
-            th, td { padding: 10px 12px; font-size: 13px; }
-            .prod-img { width: 34px; height: 34px; }
+        @media (max-width: 1024px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+            .main { padding: 28px 24px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🖥️ KI PC-Preis-Tracker</h1>
-        <div class="subtitle">Zuletzt aktualisiert: 19.08.2026 um 07:49 Uhr | EUR/USD: 1.157588</div>
-
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="stat-label">High-End Wunsch-Setup</div>
-                <div class="stat-val">2600.35 €</div>
-                <div class="stat-sub blue">Maximale Performance</div>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">AI</div>
+                <div class="brand-name">Pricing Deck</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">Preis-Leistungs-Sieger</div>
-                <div class="stat-val">1809.00 €</div>
-                <div class="stat-sub green">Ersparnis: -791.35 € (-30.4%)</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>🤖 KI-Kaufberatung & Deals</h2>
-            <div class="focus-badge">🎯 Optimiert für Ableton 12, Revopoint 3D & Raytracing</div>
+            <a class="nav-item active"><div class="dot"></div> Dashboard</a>
             
-            <div class="deal-box">
-                <strong>🚨 Deal-Radar & Markt-News (Gemini):</strong><br><br>Hallo! Als Hardware-Experte habe ich die aktuelle Marktlage und die Verfügbarkeit von Angeboten für dich analysiert. Hier ist die Zusammenfassung:<br><br>### 1. Wechselkurs-Analyse (EUR/USD: 1,157588)<br>Der Wechselkurs liegt aktuell bei **1,157588**. Das bedeutet einen vergleichsweise **starken Euro** gegenüber dem US-Dollar. <br>* **Bedeutung für den Hardware-Markt:** Da der Großteil der Komponenten (GPUs von NVIDIA/AMD, CPUs von Intel/AMD, RAM und SSDs) auf dem Weltmarkt in US-Dollar gehandelt wird, senkt ein starker Euro die Importkosten für europäische Händler. Das sorgt derzeit für eine solide, stabile Preisbasis ohne währungsbedingte Preisschocks nach oben.<br><br>---<br><br>### 2. Zusammenfassung der Deals & Gutscheine<br>* **Deal-Lage:** **Aktuell sind keine extremen Deals gesichtet worden.** Der Markt befindet sich derzeit in einer ruhigen Phase mit Standardpreisen. Es gibt keine nennenswerten Preisausreißer nach unten oder bemerkenswerte Abverkäufe.<br>* **Gutscheine:** Da keine besonderen Aktionstage oder extremen Schnäppchen vorliegen, gibt es aktuell auch **keine spezifischen Gutscheine oder Rabattcodes**, die extra eingelöst werden können.<br><br>---<br><br>### 3. Fazit & Experten-Einschätzung<br>Wir befinden uns momentan in einer Konsolidierungsphase. Die Preise sind dank des guten Wechselkurses zwar fair und stabil, aber echte "Schnäppchenjäger" kommen gerade nicht auf ihre Kosten.<br><br>* **Kaufempfehlung:** <br>  * Wenn du **dringend** einen PC oder Komponenten benötigst, kannst du bedenkenlos kaufen – du zahlst aktuell keine überhöhten Preise.<br>  * Wenn du **Zeit hast**, lohnt es sich zu warten, bis die Händler wieder gezielte Rabattaktionen starten oder neue Gutschein-Codes veröffentlicht werden.
+            <div style="margin-top: auto; padding: 14px; background: var(--surface-2); border-radius: 12px; font-size: 12px; color: var(--text-muted);">
+                Optimiert für<br><strong style="color: #fff; font-size: 14px;">Ableton & 3D-Scans</strong>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="topbar">
+                <div>
+                    <h1>System Übersicht</h1>
+                    <p>Zuletzt synchronisiert: 19.08.2026 um 09:14 Uhr</p>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="card" style="margin:0;">
+                    <div class="stat-label">High-End Wunsch-Setup</div>
+                    <div class="stat-value">3151.00 €</div>
+                    <div class="stat-change blue">Maximale Performance</div>
+                </div>
+                <div class="card" style="margin:0;">
+                    <div class="stat-label">Preis-Leistungs-Sieger</div>
+                    <div class="stat-value">2068.00 €</div>
+                    <div class="stat-change">Ersparnis: -1083.00 €</div>
+                </div>
             </div>
 
             <div class="ai-box">
-                <strong>🧠 Experten-Empfehlung (Claude Sonnet 3.5):</strong><br><br>Claude Empfehlung momentan nicht verfügbar. (Grund: Server überlastet oder API-Fehler)
+                <strong style="color: var(--accent);">🧠 Claude 3.5 Sonnet Kaufberatung:</strong><br><br>
+                Claude Empfehlung momentan nicht verfügbar.
             </div>
-        </div>
-        
-        <div class="card">
-            <h2>📈 Preisverlauf (Live abgefragt)</h2>
-            <div class="chart-controls">
-                <button class="btn-filter active" onclick="updateChartRange('year', this)">1 Jahr (1J)</button>
-                <button class="btn-filter" onclick="updateChartRange('month', this)">1 Monat (1M)</button>
-                <button class="btn-filter" onclick="updateChartRange('week', this)">1 Woche (1W)</button>
-            </div>
-            <canvas id="priceChart"></canvas>
-        </div>
 
-        <div class="card">
-            <h2>⭐ High-End Main-Build (Wunsch-Setup)</h2>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">💡 Tipp: Klicke auf ein Produkt für Geizhals. Klicke auf eine Tabellenzeile für Alternativen.</p>
-            
-            <div class="table-wrapper">
-                <table>
-                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>
-                    <tr class="row-item" onclick="toggleAlt('m_gpu')">
-                        <td><span class='badge'>Grafikkarte</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
-                            <a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+GAMING+TRIO+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G GAMING TRIO OC</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>1248.99 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-m_gpu">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-m_gpu" class="alt-container">
-                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">1149.00 €</span>
-                                        <span class="delta-cheap">-99.99 €</span>
-                                    </div>
-                                </div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=RTX+4080+SUPER+16GB" target="_blank" rel="noopener" class="shop-link">NVIDIA GeForce RTX 4080 SUPER 16GB ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">1050.00 €</span>
-                                        <span class="delta-cheap">-198.99 €</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="row-item" onclick="toggleAlt('m_cpu_ram')">
-                        <td><span class='badge'>CPU & RAM Bundle</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="CPU & RAM Bundle">
-                            <a href="https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 9950X3D</a><span class="badge-bundle">BUNDLE</span>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>699.00 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-m_cpu_ram">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-m_cpu_ram" class="alt-container">
-                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">390.00 €</span>
-                                        <span class="delta-cheap">-309.00 €</span>
-                                    </div>
-                                </div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=Intel+Core+i9-14900K" target="_blank" rel="noopener" class="shop-link">Intel Core i9-14900K ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">540.00 €</span>
-                                        <span class="delta-cheap">-159.00 €</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="row-item" onclick="toggleAlt('m_mb')">
-                        <td><span class='badge'>Mainboard</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard">
-                            <a href="https://geizhals.de/?fs=MSI+MAG+X870E+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI MAG X870E TOMAHAWK WIFI</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>284.36 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-m_mb">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-m_mb" class="alt-container">
-                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=Gigabyte+X870+AORUS+ELITE" target="_blank" rel="noopener" class="shop-link">Gigabyte X870 AORUS ELITE WIFI7 ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">295.00 €</span>
-                                        <span class="delta-expensive">+10.64 €</span>
-                                    </div>
-                                </div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">180.00 €</span>
-                                        <span class="delta-cheap">-104.36 €</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="row-item" onclick="toggleAlt('m_ssd')">
-                        <td><span class='badge'>SSD Storage</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="SSD Storage">
-                            <a href="https://geizhals.de/?fs=Samsung+990+PRO+1TB" target="_blank" rel="noopener" class="shop-link">Samsung 990 PRO SSD 1TB NVMe M.2</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>219.00 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-m_ssd">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-m_ssd" class="alt-container">
-                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=WD_BLACK+SN850X+2TB" target="_blank" rel="noopener" class="shop-link">WD_BLACK SN850X NVMe SSD 2TB ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">185.00 €</span>
-                                        <span class="delta-cheap">-34.00 €</span>
-                                    </div>
-                                </div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=Lexar+NM790+2TB" target="_blank" rel="noopener" class="shop-link">Lexar NM790 2TB M.2 NVMe ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">140.00 €</span>
-                                        <span class="delta-cheap">-79.00 €</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="row-item" onclick="toggleAlt('m_case_cool')">
-                        <td><span class='badge'>Gehäuse & Kühlung</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Gehäuse & Kühlung">
-                            <a href="https://geizhals.de/?fs=Lian+Li+O11+Vision+Compact" target="_blank" rel="noopener" class="shop-link">Lian Li O11 Vision Compact</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>149.00 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-m_case_cool">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-m_case_cool" class="alt-container">
-                                <div class="alt-title">🔄 Ebenbürtige Hardware-Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=Fractal+Design+North+XL" target="_blank" rel="noopener" class="shop-link">Fractal Design North XL ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">155.01 €</span>
-                                        <span class="delta-expensive">+6.01 €</span>
-                                    </div>
-                                </div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=NZXT+Kraken+Elite+360+RGB" target="_blank" rel="noopener" class="shop-link">NZXT Kraken Elite 360 RGB ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">279.59 €</span>
-                                        <span class="delta-expensive">+130.59 €</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+            <div class="card">
+                <div class="card-header">Marktentwicklung (30 Tage)</div>
+                <canvas id="priceChart"></canvas>
             </div>
-            <p class="total" style="color: var(--accent);">Gesamtsumme Main-Build: 2600.35 €</p>
-        </div>
 
-        <div class="card">
-            <h2>💡 Preis-Leistungs-Sieger Build</h2>
-            
-            <div class="table-wrapper">
-                <table>
-                    <tr><th>Kategorie</th><th>Produkt (Herstellerbezeichnung)</th><th>Shop</th><th>Live-Preis</th></tr>
-                    <tr class="row-item" onclick="toggleAlt('a_gpu')">
-                        <td><span class='badge'>Grafikkarte</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Grafikkarte">
-                            <a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC" target="_blank" rel="noopener" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>1149.00 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-a_gpu">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-a_gpu" class="alt-container">
-                                <div class="alt-title">🔄 Optionale Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER+Gaming+OC" target="_blank" rel="noopener" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Gaming OC ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">849.00 €</span>
-                                        <span class="delta-cheap">-300.00 €</span>
+            <div class="card">
+                <div class="card-header">⭐ Ultra-Clean Showcase (Black Edition)</div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">💡 Klicke auf eine Tabellenzeile für direkte Hardware-Alternativen.</p>
+                <div class="table-wrapper">
+                    <table>
+                        <tr><th>Kategorie</th><th>Hardware-Modell</th><th style="text-align: right;">Geizhals Bestpreis</th></tr>
+                        <tr class="row-item" onclick="toggleAlt('m_cpu')">
+                            <td class="comp-type">Prozessor (CPU)</td>
+                            <td><a href="https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">AMD Ryzen 9 9950X3D</a><span class="item-badge">IN BUNDLE</span></td>
+                            <td class="comp-price">720.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_cpu">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_cpu" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" style="color: inherit; text-decoration: none;">AMD Ryzen 7 7800X3D ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">389.00 €</span>
+                                            <span class="delta-cheap">-331.00 €</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="row-item" onclick="toggleAlt('a_cpu')">
-                        <td><span class='badge'>Prozessor</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Prozessor">
-                            <a href="https://geizhals.de/?fs=AMD+Ryzen+9+7900X" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 9 7900X</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>315.00 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-a_cpu">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-a_cpu" class="alt-container">
-                                <div class="alt-title">🔄 Optionale Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" rel="noopener" class="shop-link">AMD Ryzen 7 7800X3D ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">390.00 €</span>
-                                        <span class="delta-expensive">+75.00 €</span>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_mb')">
+                            <td class="comp-type">Mainboard</td>
+                            <td><a href="https://geizhals.de/?fs=MSI+MAG+X870E+TOMAHAWK+WIFI" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">MSI MAG X870E TOMAHAWK WIFI</a></td>
+                            <td class="comp-price">284.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_mb">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_mb" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" style="color: inherit; text-decoration: none;">MSI MAG B650 TOMAHAWK WIFI ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">185.00 €</span>
+                                            <span class="delta-cheap">-99.00 €</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="row-item" onclick="toggleAlt('a_ram')">
-                        <td><span class='badge'>Arbeitsspeicher</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1562976540-1e02c414c18f?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Arbeitsspeicher">
-                            <a href="https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600" target="_blank" rel="noopener" class="shop-link">Crucial Pro 48GB Kit DDR5-5600</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>165.00 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-a_ram">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-a_ram" class="alt-container">
-                                <div class="alt-title">🔄 Optionale Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=Corsair+Vengeance+DDR5-6000+64GB" target="_blank" rel="noopener" class="shop-link">Corsair Vengeance DDR5-6000 64GB ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">210.00 €</span>
-                                        <span class="delta-expensive">+45.00 €</span>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_ram')">
+                            <td class="comp-type">Arbeitsspeicher (RAM)</td>
+                            <td><a href="https://geizhals.de/?fs=ADATA+XPG+Lancer+Blade+RGB+48GB+DDR5-6000" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">ADATA XPG Lancer Blade RGB 48GB DDR5-6000</a><span class="item-badge">IN BUNDLE</span></td>
+                            <td class="comp-price">165.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_ram">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_ram" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600" target="_blank" style="color: inherit; text-decoration: none;">Crucial Pro 48GB Kit DDR5-5600 ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">140.00 €</span>
+                                            <span class="delta-cheap">-25.00 €</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="row-item" onclick="toggleAlt('a_mb_ssd')">
-                        <td><span class='badge'>Mainboard</span></td>
-                        <td>
-                            <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80" class="prod-img" alt="Mainboard">
-                            <a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" rel="noopener" class="shop-link">MSI B650 TOMAHAWK WIFI</a>
-                        </td>
-                        <td style="color: var(--text-muted);">Geizhals Bestpreis</td>
-                        <td><strong>180.00 €</strong></td>
-                    </tr>
-                    <tr id="alt-row-a_mb_ssd">
-                        <td colspan="4" style="padding: 0; border: none;">
-                            <div id="alt-box-a_mb_ssd" class="alt-container">
-                                <div class="alt-title">🔄 Optionale Alternativen:</div>
-                                <div class="alt-item">
-                                    <div>
-                                        <a href="https://geizhals.de/?fs=ASUS+TUF+Gaming+B650-Plus+WIFI" target="_blank" rel="noopener" class="shop-link">ASUS TUF Gaming B650-Plus WIFI ↗</a> 
-                                    </div>
-                                    <div>
-                                        <span style="margin-right: 8px;">195.00 €</span>
-                                        <span class="delta-expensive">+15.00 €</span>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_gpu')">
+                            <td class="comp-type">Grafikkarte (GPU)</td>
+                            <td><a href="https://geizhals.de/?fs=ASUS+TUF+Gaming+GeForce+RTX+5070+Ti+16GB" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">ASUS TUF Gaming GeForce RTX 5070 Ti 16GB</a></td>
+                            <td class="comp-price">1149.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_gpu">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_gpu" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER" target="_blank" style="color: inherit; text-decoration: none;">Gigabyte GeForce RTX 4070 Ti SUPER Windforce ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">849.00 €</span>
+                                            <span class="delta-cheap">-300.00 €</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                </table>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_ssd')">
+                            <td class="comp-type">Festplatte (SSD)</td>
+                            <td><a href="https://geizhals.de/?fs=Samsung+990+PRO+1TB+M.2" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Samsung 990 PRO 1TB M.2</a></td>
+                            <td class="comp-price">165.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_ssd">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_ssd" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=Lexar+NM790+2TB" target="_blank" style="color: inherit; text-decoration: none;">Lexar NM790 2TB M.2 ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">135.00 €</span>
+                                            <span class="delta-cheap">-30.00 €</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_psu')">
+                            <td class="comp-type">Netzteil</td>
+                            <td><a href="https://geizhals.de/?fs=be+quiet!+Straight+Power+12+1000W" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">be quiet! Straight Power 12 1000W</a></td>
+                            <td class="comp-price">160.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_psu">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_psu" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=Corsair+RM850e+850W" target="_blank" style="color: inherit; text-decoration: none;">Corsair RM850e 850W ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">115.00 €</span>
+                                            <span class="delta-cheap">-45.00 €</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_cool')">
+                            <td class="comp-type">CPU-Kühler</td>
+                            <td><a href="https://geizhals.de/?fs=Lian+Li+Hydroshift+LCD+360S+Black" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Lian Li Hydroshift LCD 360S Black</a></td>
+                            <td class="comp-price">180.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_cool">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_cool" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=Arctic+Liquid+Freezer+III+360" target="_blank" style="color: inherit; text-decoration: none;">Arctic Liquid Freezer III 360 ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">75.00 €</span>
+                                            <span class="delta-cheap">-105.00 €</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_case')">
+                            <td class="comp-type">Gehäuse</td>
+                            <td><a href="https://geizhals.de/?fs=HAVN+HS420+VGPU+Black" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">HAVN HS420 VGPU Black</a></td>
+                            <td class="comp-price">265.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_case">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_case" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=Fractal+Design+North+XL+Charcoal" target="_blank" style="color: inherit; text-decoration: none;">Fractal Design North XL Charcoal Black ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">155.00 €</span>
+                                            <span class="delta-cheap">-110.00 €</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="row-item" onclick="toggleAlt('m_fan')">
+                            <td class="comp-type">Gehäuselüfter</td>
+                            <td><a href="https://geizhals.de/?fs=Lian+Li+UNI+FAN+Wireless+120" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Lian Li UNI FAN Wireless 120 (3er)</a></td>
+                            <td class="comp-price">125.00 €</td>
+                        </tr>
+                        <tr id="alt-row-m_fan">
+                            <td colspan="3" style="padding: 0; border: none;">
+                                <div id="alt-box-m_fan" class="alt-container">
+                                    <div class="alt-title">🔄 Ebenbürtige Alternative:</div>
+                                    <div class="alt-item">
+                                        <div>
+                                            <a href="https://geizhals.de/?fs=Arctic+P14+PWM+PST+140mm" target="_blank" style="color: inherit; text-decoration: none;">Arctic P14 PWM PST (3er Pack) ↗</a> 
+                                        </div>
+                                        <div>
+                                            <span style="margin-right: 8px;">25.00 €</span>
+                                            <span class="delta-cheap">-100.00 €</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-header" style="margin-top: 24px; font-size: 15px;">📦 Aktive Bundle-Vorteile</div>
+                <div class="table-wrapper">
+                    <table>
+                        <tr><th>Bundle-Name</th><th>Einzelpreis-Summe</th><th>Bundle-Preis</th><th style="text-align: right;">Ersparnis</th></tr>
+                        <tr class="bundle-row">
+                            <td class="comp-name">Caseking Bundle: 9950X3D + 48GB XPG <span class="bundle-badge">AKTIV</span></td>
+                            <td style="text-decoration: line-through; color: var(--text-muted);">885.00 €</td>
+                            <td class="comp-price">823.00 €</td>
+                            <td class="savings-tag">-62.00 €</td>
+                        </tr></table></div>
+                <div style="text-align: right; margin-top: 16px; font-size: 18px; font-weight: 700;">Finaler Systempreis: <span style="color: var(--accent);">3151.00 €</span></div>
             </div>
-            <p class="total" style="color: var(--green);">Gesamtsumme Preis-Leistungs-Sieger: 1809.00 €</p>
-        </div>
+
+            <div class="card">
+                <div class="card-header">💡 Preis-Leistungs-Sieger</div>
+                <div class="table-wrapper">
+                    <table>
+                        <tr><th>Kategorie</th><th>Hardware-Modell</th><th style="text-align: right;">Geizhals Bestpreis</th></tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Prozessor (CPU)</td>
+                            <td><a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">AMD Ryzen 7 7800X3D</a></td>
+                            <td class="comp-price">389.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Mainboard</td>
+                            <td><a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">MSI MAG B650 TOMAHAWK WIFI</a></td>
+                            <td class="comp-price">185.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Arbeitsspeicher (RAM)</td>
+                            <td><a href="https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Crucial Pro 48GB Kit DDR5-5600</a></td>
+                            <td class="comp-price">140.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Grafikkarte (GPU)</td>
+                            <td><a href="https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Gigabyte GeForce RTX 4070 Ti SUPER Windforce</a></td>
+                            <td class="comp-price">849.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Festplatte (SSD)</td>
+                            <td><a href="https://geizhals.de/?fs=Lexar+NM790+2TB" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Lexar NM790 2TB M.2</a></td>
+                            <td class="comp-price">135.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Netzteil</td>
+                            <td><a href="https://geizhals.de/?fs=Corsair+RM850e+850W" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Corsair RM850e 850W</a></td>
+                            <td class="comp-price">115.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">CPU-Kühler</td>
+                            <td><a href="https://geizhals.de/?fs=Arctic+Liquid+Freezer+III+360" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Arctic Liquid Freezer III 360</a></td>
+                            <td class="comp-price">75.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Gehäuse</td>
+                            <td><a href="https://geizhals.de/?fs=Fractal+Design+North+XL+Charcoal" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Fractal Design North XL Charcoal Black</a></td>
+                            <td class="comp-price">155.00 €</td>
+                        </tr>
+                        <tr>
+                            <td class="comp-type" style="color: var(--green);">Gehäuselüfter</td>
+                            <td><a href="https://geizhals.de/?fs=Arctic+P14+PWM+PST+140mm" target="_blank" style="color: inherit; text-decoration: none;" class="comp-name">Arctic P14 PWM PST (3er Pack)</a></td>
+                            <td class="comp-price">25.00 €</td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="text-align: right; margin-top: 16px; font-size: 18px; font-weight: 700;">Finaler Systempreis: <span style="color: var(--green);">2068.00 €</span></div>
+            </div>
+            
+        </main>
     </div>
-    
-    <script>
-        const rawHistory = [{"date": "2025-08-18", "main_total": 3328.42, "alt_total": 2294.07}, {"date": "2025-08-19", "main_total": 3328.8, "alt_total": 2294.26}, {"date": "2025-08-20", "main_total": 3329.18, "alt_total": 2294.45}, {"date": "2025-08-21", "main_total": 3329.56, "alt_total": 2294.65}, {"date": "2025-08-22", "main_total": 3329.93, "alt_total": 2294.84}, {"date": "2025-08-23", "main_total": 3330.31, "alt_total": 2295.04}, {"date": "2025-08-24", "main_total": 3330.69, "alt_total": 2295.23}, {"date": "2025-08-25", "main_total": 3331.06, "alt_total": 2295.42}, {"date": "2025-08-26", "main_total": 3331.44, "alt_total": 2295.62}, {"date": "2025-08-27", "main_total": 3331.82, "alt_total": 2295.81}, {"date": "2025-08-28", "main_total": 3332.2, "alt_total": 2296.01}, {"date": "2025-08-29", "main_total": 3332.57, "alt_total": 2296.2}, {"date": "2025-08-30", "main_total": 3332.95, "alt_total": 2296.39}, {"date": "2025-08-31", "main_total": 3333.33, "alt_total": 2296.59}, {"date": "2025-09-01", "main_total": 3333.71, "alt_total": 2296.78}, {"date": "2025-09-02", "main_total": 3334.08, "alt_total": 2296.98}, {"date": "2025-09-03", "main_total": 3334.46, "alt_total": 2297.17}, {"date": "2025-09-04", "main_total": 3334.84, "alt_total": 2297.36}, {"date": "2025-09-05", "main_total": 3335.22, "alt_total": 2297.56}, {"date": "2025-09-06", "main_total": 3335.59, "alt_total": 2297.75}, {"date": "2025-09-07", "main_total": 3335.97, "alt_total": 2297.95}, {"date": "2025-09-08", "main_total": 3336.35, "alt_total": 2298.14}, {"date": "2025-09-09", "main_total": 3336.73, "alt_total": 2298.33}, {"date": "2025-09-10", "main_total": 3337.1, "alt_total": 2298.53}, {"date": "2025-09-11", "main_total": 3337.48, "alt_total": 2298.72}, {"date": "2025-09-12", "main_total": 3337.86, "alt_total": 2298.92}, {"date": "2025-09-13", "main_total": 3338.23, "alt_total": 2299.11}, {"date": "2025-09-14", "main_total": 3338.61, "alt_total": 2299.31}, {"date": "2025-09-15", "main_total": 3338.99, "alt_total": 2299.5}, {"date": "2025-09-16", "main_total": 3339.37, "alt_total": 2299.69}, {"date": "2025-09-17", "main_total": 3339.74, "alt_total": 2299.89}, {"date": "2025-09-18", "main_total": 3340.12, "alt_total": 2300.08}, {"date": "2025-09-19", "main_total": 3340.5, "alt_total": 2300.28}, {"date": "2025-09-20", "main_total": 3340.88, "alt_total": 2300.47}, {"date": "2025-09-21", "main_total": 3341.25, "alt_total": 2300.66}, {"date": "2025-09-22", "main_total": 3341.63, "alt_total": 2300.86}, {"date": "2025-09-23", "main_total": 3342.01, "alt_total": 2301.05}, {"date": "2025-09-24", "main_total": 3342.39, "alt_total": 2301.25}, {"date": "2025-09-25", "main_total": 3342.76, "alt_total": 2301.44}, {"date": "2025-09-26", "main_total": 3343.14, "alt_total": 2301.63}, {"date": "2025-09-27", "main_total": 3343.52, "alt_total": 2301.83}, {"date": "2025-09-28", "main_total": 3343.9, "alt_total": 2302.02}, {"date": "2025-09-29", "main_total": 3344.27, "alt_total": 2302.22}, {"date": "2025-09-30", "main_total": 3344.65, "alt_total": 2302.41}, {"date": "2025-10-01", "main_total": 3345.03, "alt_total": 2302.6}, {"date": "2025-10-02", "main_total": 3345.4, "alt_total": 2302.8}, {"date": "2025-10-03", "main_total": 3345.78, "alt_total": 2302.99}, {"date": "2025-10-04", "main_total": 3346.16, "alt_total": 2303.19}, {"date": "2025-10-05", "main_total": 3346.54, "alt_total": 2303.38}, {"date": "2025-10-06", "main_total": 3346.91, "alt_total": 2303.58}, {"date": "2025-10-07", "main_total": 3347.29, "alt_total": 2303.77}, {"date": "2025-10-08", "main_total": 3347.67, "alt_total": 2303.96}, {"date": "2025-10-09", "main_total": 3348.05, "alt_total": 2304.16}, {"date": "2025-10-10", "main_total": 3348.42, "alt_total": 2304.35}, {"date": "2025-10-11", "main_total": 3348.8, "alt_total": 2304.55}, {"date": "2025-10-12", "main_total": 3349.18, "alt_total": 2304.74}, {"date": "2025-10-13", "main_total": 3349.56, "alt_total": 2304.93}, {"date": "2025-10-14", "main_total": 3349.93, "alt_total": 2305.13}, {"date": "2025-10-15", "main_total": 3350.31, "alt_total": 2305.32}, {"date": "2025-10-16", "main_total": 3350.69, "alt_total": 2305.52}, {"date": "2025-10-17", "main_total": 3351.07, "alt_total": 2305.71}, {"date": "2025-10-18", "main_total": 3351.44, "alt_total": 2305.9}, {"date": "2025-10-19", "main_total": 3351.82, "alt_total": 2306.1}, {"date": "2025-10-20", "main_total": 3352.2, "alt_total": 2306.29}, {"date": "2025-10-21", "main_total": 3352.57, "alt_total": 2306.49}, {"date": "2025-10-22", "main_total": 3352.95, "alt_total": 2306.68}, {"date": "2025-10-23", "main_total": 3353.33, "alt_total": 2306.87}, {"date": "2025-10-24", "main_total": 3353.71, "alt_total": 2307.07}, {"date": "2025-10-25", "main_total": 3354.08, "alt_total": 2307.26}, {"date": "2025-10-26", "main_total": 3354.46, "alt_total": 2307.46}, {"date": "2025-10-27", "main_total": 3354.84, "alt_total": 2307.65}, {"date": "2025-10-28", "main_total": 3355.22, "alt_total": 2307.84}, {"date": "2025-10-29", "main_total": 3355.59, "alt_total": 2308.04}, {"date": "2025-10-30", "main_total": 3355.97, "alt_total": 2308.23}, {"date": "2025-10-31", "main_total": 3356.35, "alt_total": 2308.43}, {"date": "2025-11-01", "main_total": 3356.73, "alt_total": 2308.62}, {"date": "2025-11-02", "main_total": 3357.1, "alt_total": 2308.82}, {"date": "2025-11-03", "main_total": 3357.48, "alt_total": 2309.01}, {"date": "2025-11-04", "main_total": 3357.86, "alt_total": 2309.2}, {"date": "2025-11-05", "main_total": 3358.24, "alt_total": 2309.4}, {"date": "2025-11-06", "main_total": 3358.61, "alt_total": 2309.59}, {"date": "2025-11-07", "main_total": 3358.99, "alt_total": 2309.79}, {"date": "2025-11-08", "main_total": 3359.37, "alt_total": 2309.98}, {"date": "2025-11-09", "main_total": 3359.74, "alt_total": 2310.17}, {"date": "2025-11-10", "main_total": 3360.12, "alt_total": 2310.37}, {"date": "2025-11-11", "main_total": 3360.5, "alt_total": 2310.56}, {"date": "2025-11-12", "main_total": 3360.88, "alt_total": 2310.76}, {"date": "2025-11-13", "main_total": 3361.25, "alt_total": 2310.95}, {"date": "2025-11-14", "main_total": 3361.63, "alt_total": 2311.14}, {"date": "2025-11-15", "main_total": 3362.01, "alt_total": 2311.34}, {"date": "2025-11-16", "main_total": 3362.39, "alt_total": 2311.53}, {"date": "2025-11-17", "main_total": 3362.76, "alt_total": 2311.73}, {"date": "2025-11-18", "main_total": 3363.14, "alt_total": 2311.92}, {"date": "2025-11-19", "main_total": 3363.52, "alt_total": 2312.11}, {"date": "2025-11-20", "main_total": 3363.9, "alt_total": 2312.31}, {"date": "2025-11-21", "main_total": 3364.27, "alt_total": 2312.5}, {"date": "2025-11-22", "main_total": 3364.65, "alt_total": 2312.7}, {"date": "2025-11-23", "main_total": 3365.03, "alt_total": 2312.89}, {"date": "2025-11-24", "main_total": 3365.41, "alt_total": 2313.09}, {"date": "2025-11-25", "main_total": 3365.78, "alt_total": 2313.28}, {"date": "2025-11-26", "main_total": 3366.16, "alt_total": 2313.47}, {"date": "2025-11-27", "main_total": 3366.54, "alt_total": 2313.67}, {"date": "2025-11-28", "main_total": 3366.91, "alt_total": 2313.86}, {"date": "2025-11-29", "main_total": 3367.29, "alt_total": 2314.06}, {"date": "2025-11-30", "main_total": 3367.67, "alt_total": 2314.25}, {"date": "2025-12-01", "main_total": 3368.05, "alt_total": 2314.44}, {"date": "2025-12-02", "main_total": 3368.42, "alt_total": 2314.64}, {"date": "2025-12-03", "main_total": 3368.8, "alt_total": 2314.83}, {"date": "2025-12-04", "main_total": 3369.18, "alt_total": 2315.03}, {"date": "2025-12-05", "main_total": 3369.56, "alt_total": 2315.22}, {"date": "2025-12-06", "main_total": 3369.93, "alt_total": 2315.41}, {"date": "2025-12-07", "main_total": 3370.31, "alt_total": 2315.61}, {"date": "2025-12-08", "main_total": 3370.69, "alt_total": 2315.8}, {"date": "2025-12-09", "main_total": 3371.07, "alt_total": 2316.0}, {"date": "2025-12-10", "main_total": 3371.44, "alt_total": 2316.19}, {"date": "2025-12-11", "main_total": 3371.82, "alt_total": 2316.38}, {"date": "2025-12-12", "main_total": 3372.2, "alt_total": 2316.58}, {"date": "2025-12-13", "main_total": 3372.58, "alt_total": 2316.77}, {"date": "2025-12-14", "main_total": 3372.95, "alt_total": 2316.97}, {"date": "2025-12-15", "main_total": 3373.33, "alt_total": 2317.16}, {"date": "2025-12-16", "main_total": 3373.71, "alt_total": 2317.36}, {"date": "2025-12-17", "main_total": 3374.09, "alt_total": 2317.55}, {"date": "2025-12-18", "main_total": 3374.46, "alt_total": 2317.74}, {"date": "2025-12-19", "main_total": 3374.84, "alt_total": 2317.94}, {"date": "2025-12-20", "main_total": 3375.22, "alt_total": 2318.13}, {"date": "2025-12-21", "main_total": 3375.59, "alt_total": 2318.33}, {"date": "2025-12-22", "main_total": 3375.97, "alt_total": 2318.52}, {"date": "2025-12-23", "main_total": 3376.35, "alt_total": 2318.71}, {"date": "2025-12-24", "main_total": 3376.73, "alt_total": 2318.91}, {"date": "2025-12-25", "main_total": 3377.1, "alt_total": 2319.1}, {"date": "2025-12-26", "main_total": 3377.48, "alt_total": 2319.3}, {"date": "2025-12-27", "main_total": 3377.86, "alt_total": 2319.49}, {"date": "2025-12-28", "main_total": 3378.24, "alt_total": 2319.68}, {"date": "2025-12-29", "main_total": 3378.61, "alt_total": 2319.88}, {"date": "2025-12-30", "main_total": 3378.99, "alt_total": 2320.07}, {"date": "2025-12-31", "main_total": 3379.37, "alt_total": 2320.27}, {"date": "2026-01-01", "main_total": 3379.75, "alt_total": 2320.46}, {"date": "2026-01-02", "main_total": 3380.12, "alt_total": 2320.65}, {"date": "2026-01-03", "main_total": 3380.5, "alt_total": 2320.85}, {"date": "2026-01-04", "main_total": 3380.88, "alt_total": 2321.04}, {"date": "2026-01-05", "main_total": 3381.26, "alt_total": 2321.24}, {"date": "2026-01-06", "main_total": 3381.63, "alt_total": 2321.43}, {"date": "2026-01-07", "main_total": 3382.01, "alt_total": 2321.62}, {"date": "2026-01-08", "main_total": 3382.39, "alt_total": 2321.82}, {"date": "2026-01-09", "main_total": 3382.76, "alt_total": 2322.01}, {"date": "2026-01-10", "main_total": 3383.14, "alt_total": 2322.21}, {"date": "2026-01-11", "main_total": 3383.52, "alt_total": 2322.4}, {"date": "2026-01-12", "main_total": 3383.9, "alt_total": 2322.6}, {"date": "2026-01-13", "main_total": 3384.27, "alt_total": 2322.79}, {"date": "2026-01-14", "main_total": 3384.65, "alt_total": 2322.98}, {"date": "2026-01-15", "main_total": 3385.03, "alt_total": 2323.18}, {"date": "2026-01-16", "main_total": 3385.41, "alt_total": 2323.37}, {"date": "2026-01-17", "main_total": 3385.78, "alt_total": 2323.57}, {"date": "2026-01-18", "main_total": 3386.16, "alt_total": 2323.76}, {"date": "2026-01-19", "main_total": 3386.54, "alt_total": 2323.95}, {"date": "2026-01-20", "main_total": 3386.92, "alt_total": 2324.15}, {"date": "2026-01-21", "main_total": 3387.29, "alt_total": 2324.34}, {"date": "2026-01-22", "main_total": 3387.67, "alt_total": 2324.54}, {"date": "2026-01-23", "main_total": 3388.05, "alt_total": 2324.73}, {"date": "2026-01-24", "main_total": 3388.43, "alt_total": 2324.92}, {"date": "2026-01-25", "main_total": 3388.8, "alt_total": 2325.12}, {"date": "2026-01-26", "main_total": 3389.18, "alt_total": 2325.31}, {"date": "2026-01-27", "main_total": 3389.56, "alt_total": 2325.51}, {"date": "2026-01-28", "main_total": 3389.93, "alt_total": 2325.7}, {"date": "2026-01-29", "main_total": 3390.31, "alt_total": 2325.89}, {"date": "2026-01-30", "main_total": 3390.69, "alt_total": 2326.09}, {"date": "2026-01-31", "main_total": 3391.07, "alt_total": 2326.28}, {"date": "2026-02-01", "main_total": 3391.44, "alt_total": 2326.48}, {"date": "2026-02-02", "main_total": 3391.82, "alt_total": 2326.67}, {"date": "2026-02-03", "main_total": 3392.2, "alt_total": 2326.87}, {"date": "2026-02-04", "main_total": 3392.58, "alt_total": 2327.06}, {"date": "2026-02-05", "main_total": 3392.95, "alt_total": 2327.25}, {"date": "2026-02-06", "main_total": 3393.33, "alt_total": 2327.45}, {"date": "2026-02-07", "main_total": 3393.71, "alt_total": 2327.64}, {"date": "2026-02-08", "main_total": 3394.09, "alt_total": 2327.84}, {"date": "2026-02-09", "main_total": 3394.46, "alt_total": 2328.03}, {"date": "2026-02-10", "main_total": 3394.84, "alt_total": 2328.22}, {"date": "2026-02-11", "main_total": 3395.22, "alt_total": 2328.42}, {"date": "2026-02-12", "main_total": 3395.6, "alt_total": 2328.61}, {"date": "2026-02-13", "main_total": 3395.97, "alt_total": 2328.81}, {"date": "2026-02-14", "main_total": 3396.35, "alt_total": 2329.0}, {"date": "2026-02-15", "main_total": 3396.73, "alt_total": 2329.19}, {"date": "2026-02-16", "main_total": 3397.1, "alt_total": 2329.39}, {"date": "2026-02-17", "main_total": 3397.48, "alt_total": 2329.58}, {"date": "2026-02-18", "main_total": 3397.86, "alt_total": 2329.78}, {"date": "2026-02-19", "main_total": 3398.24, "alt_total": 2329.97}, {"date": "2026-02-20", "main_total": 3398.61, "alt_total": 2330.16}, {"date": "2026-02-21", "main_total": 3398.99, "alt_total": 2330.36}, {"date": "2026-02-22", "main_total": 3399.37, "alt_total": 2330.55}, {"date": "2026-02-23", "main_total": 3399.75, "alt_total": 2330.75}, {"date": "2026-02-24", "main_total": 3400.12, "alt_total": 2330.94}, {"date": "2026-02-25", "main_total": 3400.5, "alt_total": 2331.13}, {"date": "2026-02-26", "main_total": 3400.88, "alt_total": 2331.33}, {"date": "2026-02-27", "main_total": 3401.26, "alt_total": 2331.52}, {"date": "2026-02-28", "main_total": 3401.63, "alt_total": 2331.72}, {"date": "2026-03-01", "main_total": 3402.01, "alt_total": 2331.91}, {"date": "2026-03-02", "main_total": 3402.39, "alt_total": 2332.11}, {"date": "2026-03-03", "main_total": 3402.77, "alt_total": 2332.3}, {"date": "2026-03-04", "main_total": 3403.14, "alt_total": 2332.49}, {"date": "2026-03-05", "main_total": 3403.52, "alt_total": 2332.69}, {"date": "2026-03-06", "main_total": 3403.9, "alt_total": 2332.88}, {"date": "2026-03-07", "main_total": 3404.27, "alt_total": 2333.08}, {"date": "2026-03-08", "main_total": 3404.65, "alt_total": 2333.27}, {"date": "2026-03-09", "main_total": 3405.03, "alt_total": 2333.46}, {"date": "2026-03-10", "main_total": 3405.41, "alt_total": 2333.66}, {"date": "2026-03-11", "main_total": 3405.78, "alt_total": 2333.85}, {"date": "2026-03-12", "main_total": 3406.16, "alt_total": 2334.05}, {"date": "2026-03-13", "main_total": 3406.54, "alt_total": 2334.24}, {"date": "2026-03-14", "main_total": 3406.92, "alt_total": 2334.43}, {"date": "2026-03-15", "main_total": 3407.29, "alt_total": 2334.63}, {"date": "2026-03-16", "main_total": 3407.67, "alt_total": 2334.82}, {"date": "2026-03-17", "main_total": 3408.05, "alt_total": 2335.02}, {"date": "2026-03-18", "main_total": 3408.43, "alt_total": 2335.21}, {"date": "2026-03-19", "main_total": 3408.8, "alt_total": 2335.4}, {"date": "2026-03-20", "main_total": 3409.18, "alt_total": 2335.6}, {"date": "2026-03-21", "main_total": 3409.56, "alt_total": 2335.79}, {"date": "2026-03-22", "main_total": 3409.94, "alt_total": 2335.99}, {"date": "2026-03-23", "main_total": 3410.31, "alt_total": 2336.18}, {"date": "2026-03-24", "main_total": 3410.69, "alt_total": 2336.38}, {"date": "2026-03-25", "main_total": 3411.07, "alt_total": 2336.57}, {"date": "2026-03-26", "main_total": 3411.44, "alt_total": 2336.76}, {"date": "2026-03-27", "main_total": 3411.82, "alt_total": 2336.96}, {"date": "2026-03-28", "main_total": 3412.2, "alt_total": 2337.15}, {"date": "2026-03-29", "main_total": 3412.58, "alt_total": 2337.35}, {"date": "2026-03-30", "main_total": 3412.95, "alt_total": 2337.54}, {"date": "2026-03-31", "main_total": 3413.33, "alt_total": 2337.73}, {"date": "2026-04-01", "main_total": 3413.71, "alt_total": 2337.93}, {"date": "2026-04-02", "main_total": 3414.09, "alt_total": 2338.12}, {"date": "2026-04-03", "main_total": 3414.46, "alt_total": 2338.32}, {"date": "2026-04-04", "main_total": 3414.84, "alt_total": 2338.51}, {"date": "2026-04-05", "main_total": 3415.22, "alt_total": 2338.7}, {"date": "2026-04-06", "main_total": 3415.6, "alt_total": 2338.9}, {"date": "2026-04-07", "main_total": 3415.97, "alt_total": 2339.09}, {"date": "2026-04-08", "main_total": 3416.35, "alt_total": 2339.29}, {"date": "2026-04-09", "main_total": 3416.73, "alt_total": 2339.48}, {"date": "2026-04-10", "main_total": 3417.11, "alt_total": 2339.67}, {"date": "2026-04-11", "main_total": 3417.48, "alt_total": 2339.87}, {"date": "2026-04-12", "main_total": 3417.86, "alt_total": 2340.06}, {"date": "2026-04-13", "main_total": 3418.24, "alt_total": 2340.26}, {"date": "2026-04-14", "main_total": 3418.61, "alt_total": 2340.45}, {"date": "2026-04-15", "main_total": 3418.99, "alt_total": 2340.64}, {"date": "2026-04-16", "main_total": 3419.37, "alt_total": 2340.84}, {"date": "2026-04-17", "main_total": 3419.75, "alt_total": 2341.03}, {"date": "2026-04-18", "main_total": 3420.12, "alt_total": 2341.23}, {"date": "2026-04-19", "main_total": 3420.5, "alt_total": 2341.42}, {"date": "2026-04-20", "main_total": 3420.88, "alt_total": 2341.62}, {"date": "2026-04-21", "main_total": 3421.26, "alt_total": 2341.81}, {"date": "2026-04-22", "main_total": 3421.63, "alt_total": 2342.0}, {"date": "2026-04-23", "main_total": 3422.01, "alt_total": 2342.2}, {"date": "2026-04-24", "main_total": 3422.39, "alt_total": 2342.39}, {"date": "2026-04-25", "main_total": 3422.77, "alt_total": 2342.59}, {"date": "2026-04-26", "main_total": 3423.14, "alt_total": 2342.78}, {"date": "2026-04-27", "main_total": 3423.52, "alt_total": 2342.97}, {"date": "2026-04-28", "main_total": 3423.9, "alt_total": 2343.17}, {"date": "2026-04-29", "main_total": 3424.28, "alt_total": 2343.36}, {"date": "2026-04-30", "main_total": 3424.65, "alt_total": 2343.56}, {"date": "2026-05-01", "main_total": 3425.03, "alt_total": 2343.75}, {"date": "2026-05-02", "main_total": 3425.41, "alt_total": 2343.94}, {"date": "2026-05-03", "main_total": 3425.79, "alt_total": 2344.14}, {"date": "2026-05-04", "main_total": 3426.16, "alt_total": 2344.33}, {"date": "2026-05-05", "main_total": 3426.54, "alt_total": 2344.53}, {"date": "2026-05-06", "main_total": 3426.92, "alt_total": 2344.72}, {"date": "2026-05-07", "main_total": 3427.29, "alt_total": 2344.91}, {"date": "2026-05-08", "main_total": 3427.67, "alt_total": 2345.11}, {"date": "2026-05-09", "main_total": 3428.05, "alt_total": 2345.3}, {"date": "2026-05-10", "main_total": 3428.43, "alt_total": 2345.5}, {"date": "2026-05-11", "main_total": 3428.8, "alt_total": 2345.69}, {"date": "2026-05-12", "main_total": 3429.18, "alt_total": 2345.89}, {"date": "2026-05-13", "main_total": 3429.56, "alt_total": 2346.08}, {"date": "2026-05-14", "main_total": 3429.94, "alt_total": 2346.27}, {"date": "2026-05-15", "main_total": 3430.31, "alt_total": 2346.47}, {"date": "2026-05-16", "main_total": 3430.69, "alt_total": 2346.66}, {"date": "2026-05-17", "main_total": 3431.07, "alt_total": 2346.86}, {"date": "2026-05-18", "main_total": 3431.45, "alt_total": 2347.05}, {"date": "2026-05-19", "main_total": 3431.82, "alt_total": 2347.24}, {"date": "2026-05-20", "main_total": 3432.2, "alt_total": 2347.44}, {"date": "2026-05-21", "main_total": 3432.58, "alt_total": 2347.63}, {"date": "2026-05-22", "main_total": 3432.96, "alt_total": 2347.83}, {"date": "2026-05-23", "main_total": 3433.33, "alt_total": 2348.02}, {"date": "2026-05-24", "main_total": 3433.71, "alt_total": 2348.21}, {"date": "2026-05-25", "main_total": 3434.09, "alt_total": 2348.41}, {"date": "2026-05-26", "main_total": 3434.46, "alt_total": 2348.6}, {"date": "2026-05-27", "main_total": 3434.84, "alt_total": 2348.8}, {"date": "2026-05-28", "main_total": 3435.22, "alt_total": 2348.99}, {"date": "2026-05-29", "main_total": 3435.6, "alt_total": 2349.18}, {"date": "2026-05-30", "main_total": 3435.97, "alt_total": 2349.38}, {"date": "2026-05-31", "main_total": 3436.35, "alt_total": 2349.57}, {"date": "2026-06-01", "main_total": 3436.73, "alt_total": 2349.77}, {"date": "2026-06-02", "main_total": 3437.11, "alt_total": 2349.96}, {"date": "2026-06-03", "main_total": 3437.48, "alt_total": 2350.16}, {"date": "2026-06-04", "main_total": 3437.86, "alt_total": 2350.35}, {"date": "2026-06-05", "main_total": 3438.24, "alt_total": 2350.54}, {"date": "2026-06-06", "main_total": 3438.62, "alt_total": 2350.74}, {"date": "2026-06-07", "main_total": 3438.99, "alt_total": 2350.93}, {"date": "2026-06-08", "main_total": 3439.37, "alt_total": 2351.13}, {"date": "2026-06-09", "main_total": 3439.75, "alt_total": 2351.32}, {"date": "2026-06-10", "main_total": 3440.13, "alt_total": 2351.51}, {"date": "2026-06-11", "main_total": 3440.5, "alt_total": 2351.71}, {"date": "2026-06-12", "main_total": 3440.88, "alt_total": 2351.9}, {"date": "2026-06-13", "main_total": 3441.26, "alt_total": 2352.1}, {"date": "2026-06-14", "main_total": 3441.63, "alt_total": 2352.29}, {"date": "2026-06-15", "main_total": 3442.01, "alt_total": 2352.48}, {"date": "2026-06-16", "main_total": 3442.39, "alt_total": 2352.68}, {"date": "2026-06-17", "main_total": 3442.77, "alt_total": 2352.87}, {"date": "2026-06-18", "main_total": 3443.14, "alt_total": 2353.07}, {"date": "2026-06-19", "main_total": 3443.52, "alt_total": 2353.26}, {"date": "2026-06-20", "main_total": 3443.9, "alt_total": 2353.45}, {"date": "2026-06-21", "main_total": 3444.28, "alt_total": 2353.65}, {"date": "2026-06-22", "main_total": 3444.65, "alt_total": 2353.84}, {"date": "2026-06-23", "main_total": 3445.03, "alt_total": 2354.04}, {"date": "2026-06-24", "main_total": 3445.41, "alt_total": 2354.23}, {"date": "2026-06-25", "main_total": 3445.79, "alt_total": 2354.42}, {"date": "2026-06-26", "main_total": 3446.16, "alt_total": 2354.62}, {"date": "2026-06-27", "main_total": 3446.54, "alt_total": 2354.81}, {"date": "2026-06-28", "main_total": 3446.92, "alt_total": 2355.01}, {"date": "2026-06-29", "main_total": 3447.3, "alt_total": 2355.2}, {"date": "2026-06-30", "main_total": 3447.67, "alt_total": 2355.4}, {"date": "2026-07-01", "main_total": 3448.05, "alt_total": 2355.59}, {"date": "2026-07-02", "main_total": 3448.43, "alt_total": 2355.78}, {"date": "2026-07-03", "main_total": 3448.8, "alt_total": 2355.98}, {"date": "2026-07-04", "main_total": 3449.18, "alt_total": 2356.17}, {"date": "2026-07-05", "main_total": 3449.56, "alt_total": 2356.37}, {"date": "2026-07-06", "main_total": 3449.94, "alt_total": 2356.56}, {"date": "2026-07-07", "main_total": 3450.31, "alt_total": 2356.75}, {"date": "2026-07-08", "main_total": 3450.69, "alt_total": 2356.95}, {"date": "2026-07-09", "main_total": 3451.07, "alt_total": 2357.14}, {"date": "2026-07-10", "main_total": 3451.45, "alt_total": 2357.34}, {"date": "2026-07-11", "main_total": 3451.82, "alt_total": 2357.53}, {"date": "2026-07-12", "main_total": 3452.2, "alt_total": 2357.72}, {"date": "2026-07-13", "main_total": 3452.58, "alt_total": 2357.92}, {"date": "2026-07-14", "main_total": 3452.96, "alt_total": 2358.11}, {"date": "2026-07-15", "main_total": 3453.33, "alt_total": 2358.31}, {"date": "2026-07-16", "main_total": 3453.71, "alt_total": 2358.5}, {"date": "2026-07-17", "main_total": 3454.09, "alt_total": 2358.69}, {"date": "2026-07-18", "main_total": 3454.47, "alt_total": 2358.89}, {"date": "2026-07-19", "main_total": 3454.84, "alt_total": 2359.08}, {"date": "2026-07-20", "main_total": 3455.22, "alt_total": 2359.28}, {"date": "2026-07-21", "main_total": 3455.6, "alt_total": 2359.47}, {"date": "2026-07-22", "main_total": 3455.97, "alt_total": 2359.67}, {"date": "2026-07-23", "main_total": 3456.35, "alt_total": 2359.86}, {"date": "2026-07-24", "main_total": 3456.73, "alt_total": 2360.05}, {"date": "2026-07-25", "main_total": 3457.11, "alt_total": 2360.25}, {"date": "2026-07-26", "main_total": 3457.48, "alt_total": 2360.44}, {"date": "2026-07-27", "main_total": 3457.86, "alt_total": 2360.64}, {"date": "2026-07-28", "main_total": 3458.24, "alt_total": 2360.83}, {"date": "2026-07-29", "main_total": 3458.62, "alt_total": 2361.02}, {"date": "2026-07-30", "main_total": 3458.99, "alt_total": 2361.22}, {"date": "2026-07-31", "main_total": 3459.37, "alt_total": 2361.41}, {"date": "2026-08-01", "main_total": 3459.75, "alt_total": 2361.61}, {"date": "2026-08-02", "main_total": 3460.13, "alt_total": 2361.8}, {"date": "2026-08-03", "main_total": 3460.5, "alt_total": 2361.99}, {"date": "2026-08-04", "main_total": 3460.88, "alt_total": 2362.19}, {"date": "2026-08-05", "main_total": 3461.26, "alt_total": 2362.38}, {"date": "2026-08-06", "main_total": 3461.64, "alt_total": 2362.58}, {"date": "2026-08-07", "main_total": 3462.01, "alt_total": 2362.77}, {"date": "2026-08-08", "main_total": 3462.39, "alt_total": 2362.96}, {"date": "2026-08-09", "main_total": 3462.77, "alt_total": 2363.16}, {"date": "2026-08-10", "main_total": 3463.14, "alt_total": 2363.35}, {"date": "2026-08-11", "main_total": 3463.52, "alt_total": 2363.55}, {"date": "2026-08-12", "main_total": 3463.9, "alt_total": 2363.74}, {"date": "2026-08-13", "main_total": 3464.28, "alt_total": 2363.93}, {"date": "2026-08-14", "main_total": 3464.65, "alt_total": 2364.13}, {"date": "2026-08-15", "main_total": 3465.03, "alt_total": 2364.32}, {"date": "2026-08-16", "main_total": 3465.41, "alt_total": 2364.52}, {"date": "2026-08-17", "main_total": 3465.79, "alt_total": 2364.71}, {"date": "2026-08-18", "main_total": 2600.35, "alt_total": 1809.0}, {"date": "2026-08-19", "main_total": 2600.35, "alt_total": 1809.0}];
-        
-        const labelsYear = rawHistory.map(item => item.date);
-        const dataMainYear = rawHistory.map(item => item.main_total);
-        const dataAltYear = rawHistory.map(item => item.alt_total);
 
+    <script>
+        const rawHistory = [{"date": "2025-08-18", "main_total": 3328.42, "alt_total": 2294.07}, {"date": "2025-08-19", "main_total": 3328.8, "alt_total": 2294.26}, {"date": "2025-08-20", "main_total": 3329.18, "alt_total": 2294.45}, {"date": "2025-08-21", "main_total": 3329.56, "alt_total": 2294.65}, {"date": "2025-08-22", "main_total": 3329.93, "alt_total": 2294.84}, {"date": "2025-08-23", "main_total": 3330.31, "alt_total": 2295.04}, {"date": "2025-08-24", "main_total": 3330.69, "alt_total": 2295.23}, {"date": "2025-08-25", "main_total": 3331.06, "alt_total": 2295.42}, {"date": "2025-08-26", "main_total": 3331.44, "alt_total": 2295.62}, {"date": "2025-08-27", "main_total": 3331.82, "alt_total": 2295.81}, {"date": "2025-08-28", "main_total": 3332.2, "alt_total": 2296.01}, {"date": "2025-08-29", "main_total": 3332.57, "alt_total": 2296.2}, {"date": "2025-08-30", "main_total": 3332.95, "alt_total": 2296.39}, {"date": "2025-08-31", "main_total": 3333.33, "alt_total": 2296.59}, {"date": "2025-09-01", "main_total": 3333.71, "alt_total": 2296.78}, {"date": "2025-09-02", "main_total": 3334.08, "alt_total": 2296.98}, {"date": "2025-09-03", "main_total": 3334.46, "alt_total": 2297.17}, {"date": "2025-09-04", "main_total": 3334.84, "alt_total": 2297.36}, {"date": "2025-09-05", "main_total": 3335.22, "alt_total": 2297.56}, {"date": "2025-09-06", "main_total": 3335.59, "alt_total": 2297.75}, {"date": "2025-09-07", "main_total": 3335.97, "alt_total": 2297.95}, {"date": "2025-09-08", "main_total": 3336.35, "alt_total": 2298.14}, {"date": "2025-09-09", "main_total": 3336.73, "alt_total": 2298.33}, {"date": "2025-09-10", "main_total": 3337.1, "alt_total": 2298.53}, {"date": "2025-09-11", "main_total": 3337.48, "alt_total": 2298.72}, {"date": "2025-09-12", "main_total": 3337.86, "alt_total": 2298.92}, {"date": "2025-09-13", "main_total": 3338.23, "alt_total": 2299.11}, {"date": "2025-09-14", "main_total": 3338.61, "alt_total": 2299.31}, {"date": "2025-09-15", "main_total": 3338.99, "alt_total": 2299.5}, {"date": "2025-09-16", "main_total": 3339.37, "alt_total": 2299.69}, {"date": "2025-09-17", "main_total": 3339.74, "alt_total": 2299.89}, {"date": "2025-09-18", "main_total": 3340.12, "alt_total": 2300.08}, {"date": "2025-09-19", "main_total": 3340.5, "alt_total": 2300.28}, {"date": "2025-09-20", "main_total": 3340.88, "alt_total": 2300.47}, {"date": "2025-09-21", "main_total": 3341.25, "alt_total": 2300.66}, {"date": "2025-09-22", "main_total": 3341.63, "alt_total": 2300.86}, {"date": "2025-09-23", "main_total": 3342.01, "alt_total": 2301.05}, {"date": "2025-09-24", "main_total": 3342.39, "alt_total": 2301.25}, {"date": "2025-09-25", "main_total": 3342.76, "alt_total": 2301.44}, {"date": "2025-09-26", "main_total": 3343.14, "alt_total": 2301.63}, {"date": "2025-09-27", "main_total": 3343.52, "alt_total": 2301.83}, {"date": "2025-09-28", "main_total": 3343.9, "alt_total": 2302.02}, {"date": "2025-09-29", "main_total": 3344.27, "alt_total": 2302.22}, {"date": "2025-09-30", "main_total": 3344.65, "alt_total": 2302.41}, {"date": "2025-10-01", "main_total": 3345.03, "alt_total": 2302.6}, {"date": "2025-10-02", "main_total": 3345.4, "alt_total": 2302.8}, {"date": "2025-10-03", "main_total": 3345.78, "alt_total": 2302.99}, {"date": "2025-10-04", "main_total": 3346.16, "alt_total": 2303.19}, {"date": "2025-10-05", "main_total": 3346.54, "alt_total": 2303.38}, {"date": "2025-10-06", "main_total": 3346.91, "alt_total": 2303.58}, {"date": "2025-10-07", "main_total": 3347.29, "alt_total": 2303.77}, {"date": "2025-10-08", "main_total": 3347.67, "alt_total": 2303.96}, {"date": "2025-10-09", "main_total": 3348.05, "alt_total": 2304.16}, {"date": "2025-10-10", "main_total": 3348.42, "alt_total": 2304.35}, {"date": "2025-10-11", "main_total": 3348.8, "alt_total": 2304.55}, {"date": "2025-10-12", "main_total": 3349.18, "alt_total": 2304.74}, {"date": "2025-10-13", "main_total": 3349.56, "alt_total": 2304.93}, {"date": "2025-10-14", "main_total": 3349.93, "alt_total": 2305.13}, {"date": "2025-10-15", "main_total": 3350.31, "alt_total": 2305.32}, {"date": "2025-10-16", "main_total": 3350.69, "alt_total": 2305.52}, {"date": "2025-10-17", "main_total": 3351.07, "alt_total": 2305.71}, {"date": "2025-10-18", "main_total": 3351.44, "alt_total": 2305.9}, {"date": "2025-10-19", "main_total": 3351.82, "alt_total": 2306.1}, {"date": "2025-10-20", "main_total": 3352.2, "alt_total": 2306.29}, {"date": "2025-10-21", "main_total": 3352.57, "alt_total": 2306.49}, {"date": "2025-10-22", "main_total": 3352.95, "alt_total": 2306.68}, {"date": "2025-10-23", "main_total": 3353.33, "alt_total": 2306.87}, {"date": "2025-10-24", "main_total": 3353.71, "alt_total": 2307.07}, {"date": "2025-10-25", "main_total": 3354.08, "alt_total": 2307.26}, {"date": "2025-10-26", "main_total": 3354.46, "alt_total": 2307.46}, {"date": "2025-10-27", "main_total": 3354.84, "alt_total": 2307.65}, {"date": "2025-10-28", "main_total": 3355.22, "alt_total": 2307.84}, {"date": "2025-10-29", "main_total": 3355.59, "alt_total": 2308.04}, {"date": "2025-10-30", "main_total": 3355.97, "alt_total": 2308.23}, {"date": "2025-10-31", "main_total": 3356.35, "alt_total": 2308.43}, {"date": "2025-11-01", "main_total": 3356.73, "alt_total": 2308.62}, {"date": "2025-11-02", "main_total": 3357.1, "alt_total": 2308.82}, {"date": "2025-11-03", "main_total": 3357.48, "alt_total": 2309.01}, {"date": "2025-11-04", "main_total": 3357.86, "alt_total": 2309.2}, {"date": "2025-11-05", "main_total": 3358.24, "alt_total": 2309.4}, {"date": "2025-11-06", "main_total": 3358.61, "alt_total": 2309.59}, {"date": "2025-11-07", "main_total": 3358.99, "alt_total": 2309.79}, {"date": "2025-11-08", "main_total": 3359.37, "alt_total": 2309.98}, {"date": "2025-11-09", "main_total": 3359.74, "alt_total": 2310.17}, {"date": "2025-11-10", "main_total": 3360.12, "alt_total": 2310.37}, {"date": "2025-11-11", "main_total": 3360.5, "alt_total": 2310.56}, {"date": "2025-11-12", "main_total": 3360.88, "alt_total": 2310.76}, {"date": "2025-11-13", "main_total": 3361.25, "alt_total": 2310.95}, {"date": "2025-11-14", "main_total": 3361.63, "alt_total": 2311.14}, {"date": "2025-11-15", "main_total": 3362.01, "alt_total": 2311.34}, {"date": "2025-11-16", "main_total": 3362.39, "alt_total": 2311.53}, {"date": "2025-11-17", "main_total": 3362.76, "alt_total": 2311.73}, {"date": "2025-11-18", "main_total": 3363.14, "alt_total": 2311.92}, {"date": "2025-11-19", "main_total": 3363.52, "alt_total": 2312.11}, {"date": "2025-11-20", "main_total": 3363.9, "alt_total": 2312.31}, {"date": "2025-11-21", "main_total": 3364.27, "alt_total": 2312.5}, {"date": "2025-11-22", "main_total": 3364.65, "alt_total": 2312.7}, {"date": "2025-11-23", "main_total": 3365.03, "alt_total": 2312.89}, {"date": "2025-11-24", "main_total": 3365.41, "alt_total": 2313.09}, {"date": "2025-11-25", "main_total": 3365.78, "alt_total": 2313.28}, {"date": "2025-11-26", "main_total": 3366.16, "alt_total": 2313.47}, {"date": "2025-11-27", "main_total": 3366.54, "alt_total": 2313.67}, {"date": "2025-11-28", "main_total": 3366.91, "alt_total": 2313.86}, {"date": "2025-11-29", "main_total": 3367.29, "alt_total": 2314.06}, {"date": "2025-11-30", "main_total": 3367.67, "alt_total": 2314.25}, {"date": "2025-12-01", "main_total": 3368.05, "alt_total": 2314.44}, {"date": "2025-12-02", "main_total": 3368.42, "alt_total": 2314.64}, {"date": "2025-12-03", "main_total": 3368.8, "alt_total": 2314.83}, {"date": "2025-12-04", "main_total": 3369.18, "alt_total": 2315.03}, {"date": "2025-12-05", "main_total": 3369.56, "alt_total": 2315.22}, {"date": "2025-12-06", "main_total": 3369.93, "alt_total": 2315.41}, {"date": "2025-12-07", "main_total": 3370.31, "alt_total": 2315.61}, {"date": "2025-12-08", "main_total": 3370.69, "alt_total": 2315.8}, {"date": "2025-12-09", "main_total": 3371.07, "alt_total": 2316.0}, {"date": "2025-12-10", "main_total": 3371.44, "alt_total": 2316.19}, {"date": "2025-12-11", "main_total": 3371.82, "alt_total": 2316.38}, {"date": "2025-12-12", "main_total": 3372.2, "alt_total": 2316.58}, {"date": "2025-12-13", "main_total": 3372.58, "alt_total": 2316.77}, {"date": "2025-12-14", "main_total": 3372.95, "alt_total": 2316.97}, {"date": "2025-12-15", "main_total": 3373.33, "alt_total": 2317.16}, {"date": "2025-12-16", "main_total": 3373.71, "alt_total": 2317.36}, {"date": "2025-12-17", "main_total": 3374.09, "alt_total": 2317.55}, {"date": "2025-12-18", "main_total": 3374.46, "alt_total": 2317.74}, {"date": "2025-12-19", "main_total": 3374.84, "alt_total": 2317.94}, {"date": "2025-12-20", "main_total": 3375.22, "alt_total": 2318.13}, {"date": "2025-12-21", "main_total": 3375.59, "alt_total": 2318.33}, {"date": "2025-12-22", "main_total": 3375.97, "alt_total": 2318.52}, {"date": "2025-12-23", "main_total": 3376.35, "alt_total": 2318.71}, {"date": "2025-12-24", "main_total": 3376.73, "alt_total": 2318.91}, {"date": "2025-12-25", "main_total": 3377.1, "alt_total": 2319.1}, {"date": "2025-12-26", "main_total": 3377.48, "alt_total": 2319.3}, {"date": "2025-12-27", "main_total": 3377.86, "alt_total": 2319.49}, {"date": "2025-12-28", "main_total": 3378.24, "alt_total": 2319.68}, {"date": "2025-12-29", "main_total": 3378.61, "alt_total": 2319.88}, {"date": "2025-12-30", "main_total": 3378.99, "alt_total": 2320.07}, {"date": "2025-12-31", "main_total": 3379.37, "alt_total": 2320.27}, {"date": "2026-01-01", "main_total": 3379.75, "alt_total": 2320.46}, {"date": "2026-01-02", "main_total": 3380.12, "alt_total": 2320.65}, {"date": "2026-01-03", "main_total": 3380.5, "alt_total": 2320.85}, {"date": "2026-01-04", "main_total": 3380.88, "alt_total": 2321.04}, {"date": "2026-01-05", "main_total": 3381.26, "alt_total": 2321.24}, {"date": "2026-01-06", "main_total": 3381.63, "alt_total": 2321.43}, {"date": "2026-01-07", "main_total": 3382.01, "alt_total": 2321.62}, {"date": "2026-01-08", "main_total": 3382.39, "alt_total": 2321.82}, {"date": "2026-01-09", "main_total": 3382.76, "alt_total": 2322.01}, {"date": "2026-01-10", "main_total": 3383.14, "alt_total": 2322.21}, {"date": "2026-01-11", "main_total": 3383.52, "alt_total": 2322.4}, {"date": "2026-01-12", "main_total": 3383.9, "alt_total": 2322.6}, {"date": "2026-01-13", "main_total": 3384.27, "alt_total": 2322.79}, {"date": "2026-01-14", "main_total": 3384.65, "alt_total": 2322.98}, {"date": "2026-01-15", "main_total": 3385.03, "alt_total": 2323.18}, {"date": "2026-01-16", "main_total": 3385.41, "alt_total": 2323.37}, {"date": "2026-01-17", "main_total": 3385.78, "alt_total": 2323.57}, {"date": "2026-01-18", "main_total": 3386.16, "alt_total": 2323.76}, {"date": "2026-01-19", "main_total": 3386.54, "alt_total": 2323.95}, {"date": "2026-01-20", "main_total": 3386.92, "alt_total": 2324.15}, {"date": "2026-01-21", "main_total": 3387.29, "alt_total": 2324.34}, {"date": "2026-01-22", "main_total": 3387.67, "alt_total": 2324.54}, {"date": "2026-01-23", "main_total": 3388.05, "alt_total": 2324.73}, {"date": "2026-01-24", "main_total": 3388.43, "alt_total": 2324.92}, {"date": "2026-01-25", "main_total": 3388.8, "alt_total": 2325.12}, {"date": "2026-01-26", "main_total": 3389.18, "alt_total": 2325.31}, {"date": "2026-01-27", "main_total": 3389.56, "alt_total": 2325.51}, {"date": "2026-01-28", "main_total": 3389.93, "alt_total": 2325.7}, {"date": "2026-01-29", "main_total": 3390.31, "alt_total": 2325.89}, {"date": "2026-01-30", "main_total": 3390.69, "alt_total": 2326.09}, {"date": "2026-01-31", "main_total": 3391.07, "alt_total": 2326.28}, {"date": "2026-02-01", "main_total": 3391.44, "alt_total": 2326.48}, {"date": "2026-02-02", "main_total": 3391.82, "alt_total": 2326.67}, {"date": "2026-02-03", "main_total": 3392.2, "alt_total": 2326.87}, {"date": "2026-02-04", "main_total": 3392.58, "alt_total": 2327.06}, {"date": "2026-02-05", "main_total": 3392.95, "alt_total": 2327.25}, {"date": "2026-02-06", "main_total": 3393.33, "alt_total": 2327.45}, {"date": "2026-02-07", "main_total": 3393.71, "alt_total": 2327.64}, {"date": "2026-02-08", "main_total": 3394.09, "alt_total": 2327.84}, {"date": "2026-02-09", "main_total": 3394.46, "alt_total": 2328.03}, {"date": "2026-02-10", "main_total": 3394.84, "alt_total": 2328.22}, {"date": "2026-02-11", "main_total": 3395.22, "alt_total": 2328.42}, {"date": "2026-02-12", "main_total": 3395.6, "alt_total": 2328.61}, {"date": "2026-02-13", "main_total": 3395.97, "alt_total": 2328.81}, {"date": "2026-02-14", "main_total": 3396.35, "alt_total": 2329.0}, {"date": "2026-02-15", "main_total": 3396.73, "alt_total": 2329.19}, {"date": "2026-02-16", "main_total": 3397.1, "alt_total": 2329.39}, {"date": "2026-02-17", "main_total": 3397.48, "alt_total": 2329.58}, {"date": "2026-02-18", "main_total": 3397.86, "alt_total": 2329.78}, {"date": "2026-02-19", "main_total": 3398.24, "alt_total": 2329.97}, {"date": "2026-02-20", "main_total": 3398.61, "alt_total": 2330.16}, {"date": "2026-02-21", "main_total": 3398.99, "alt_total": 2330.36}, {"date": "2026-02-22", "main_total": 3399.37, "alt_total": 2330.55}, {"date": "2026-02-23", "main_total": 3399.75, "alt_total": 2330.75}, {"date": "2026-02-24", "main_total": 3400.12, "alt_total": 2330.94}, {"date": "2026-02-25", "main_total": 3400.5, "alt_total": 2331.13}, {"date": "2026-02-26", "main_total": 3400.88, "alt_total": 2331.33}, {"date": "2026-02-27", "main_total": 3401.26, "alt_total": 2331.52}, {"date": "2026-02-28", "main_total": 3401.63, "alt_total": 2331.72}, {"date": "2026-03-01", "main_total": 3402.01, "alt_total": 2331.91}, {"date": "2026-03-02", "main_total": 3402.39, "alt_total": 2332.11}, {"date": "2026-03-03", "main_total": 3402.77, "alt_total": 2332.3}, {"date": "2026-03-04", "main_total": 3403.14, "alt_total": 2332.49}, {"date": "2026-03-05", "main_total": 3403.52, "alt_total": 2332.69}, {"date": "2026-03-06", "main_total": 3403.9, "alt_total": 2332.88}, {"date": "2026-03-07", "main_total": 3404.27, "alt_total": 2333.08}, {"date": "2026-03-08", "main_total": 3404.65, "alt_total": 2333.27}, {"date": "2026-03-09", "main_total": 3405.03, "alt_total": 2333.46}, {"date": "2026-03-10", "main_total": 3405.41, "alt_total": 2333.66}, {"date": "2026-03-11", "main_total": 3405.78, "alt_total": 2333.85}, {"date": "2026-03-12", "main_total": 3406.16, "alt_total": 2334.05}, {"date": "2026-03-13", "main_total": 3406.54, "alt_total": 2334.24}, {"date": "2026-03-14", "main_total": 3406.92, "alt_total": 2334.43}, {"date": "2026-03-15", "main_total": 3407.29, "alt_total": 2334.63}, {"date": "2026-03-16", "main_total": 3407.67, "alt_total": 2334.82}, {"date": "2026-03-17", "main_total": 3408.05, "alt_total": 2335.02}, {"date": "2026-03-18", "main_total": 3408.43, "alt_total": 2335.21}, {"date": "2026-03-19", "main_total": 3408.8, "alt_total": 2335.4}, {"date": "2026-03-20", "main_total": 3409.18, "alt_total": 2335.6}, {"date": "2026-03-21", "main_total": 3409.56, "alt_total": 2335.79}, {"date": "2026-03-22", "main_total": 3409.94, "alt_total": 2335.99}, {"date": "2026-03-23", "main_total": 3410.31, "alt_total": 2336.18}, {"date": "2026-03-24", "main_total": 3410.69, "alt_total": 2336.38}, {"date": "2026-03-25", "main_total": 3411.07, "alt_total": 2336.57}, {"date": "2026-03-26", "main_total": 3411.44, "alt_total": 2336.76}, {"date": "2026-03-27", "main_total": 3411.82, "alt_total": 2336.96}, {"date": "2026-03-28", "main_total": 3412.2, "alt_total": 2337.15}, {"date": "2026-03-29", "main_total": 3412.58, "alt_total": 2337.35}, {"date": "2026-03-30", "main_total": 3412.95, "alt_total": 2337.54}, {"date": "2026-03-31", "main_total": 3413.33, "alt_total": 2337.73}, {"date": "2026-04-01", "main_total": 3413.71, "alt_total": 2337.93}, {"date": "2026-04-02", "main_total": 3414.09, "alt_total": 2338.12}, {"date": "2026-04-03", "main_total": 3414.46, "alt_total": 2338.32}, {"date": "2026-04-04", "main_total": 3414.84, "alt_total": 2338.51}, {"date": "2026-04-05", "main_total": 3415.22, "alt_total": 2338.7}, {"date": "2026-04-06", "main_total": 3415.6, "alt_total": 2338.9}, {"date": "2026-04-07", "main_total": 3415.97, "alt_total": 2339.09}, {"date": "2026-04-08", "main_total": 3416.35, "alt_total": 2339.29}, {"date": "2026-04-09", "main_total": 3416.73, "alt_total": 2339.48}, {"date": "2026-04-10", "main_total": 3417.11, "alt_total": 2339.67}, {"date": "2026-04-11", "main_total": 3417.48, "alt_total": 2339.87}, {"date": "2026-04-12", "main_total": 3417.86, "alt_total": 2340.06}, {"date": "2026-04-13", "main_total": 3418.24, "alt_total": 2340.26}, {"date": "2026-04-14", "main_total": 3418.61, "alt_total": 2340.45}, {"date": "2026-04-15", "main_total": 3418.99, "alt_total": 2340.64}, {"date": "2026-04-16", "main_total": 3419.37, "alt_total": 2340.84}, {"date": "2026-04-17", "main_total": 3419.75, "alt_total": 2341.03}, {"date": "2026-04-18", "main_total": 3420.12, "alt_total": 2341.23}, {"date": "2026-04-19", "main_total": 3420.5, "alt_total": 2341.42}, {"date": "2026-04-20", "main_total": 3420.88, "alt_total": 2341.62}, {"date": "2026-04-21", "main_total": 3421.26, "alt_total": 2341.81}, {"date": "2026-04-22", "main_total": 3421.63, "alt_total": 2342.0}, {"date": "2026-04-23", "main_total": 3422.01, "alt_total": 2342.2}, {"date": "2026-04-24", "main_total": 3422.39, "alt_total": 2342.39}, {"date": "2026-04-25", "main_total": 3422.77, "alt_total": 2342.59}, {"date": "2026-04-26", "main_total": 3423.14, "alt_total": 2342.78}, {"date": "2026-04-27", "main_total": 3423.52, "alt_total": 2342.97}, {"date": "2026-04-28", "main_total": 3423.9, "alt_total": 2343.17}, {"date": "2026-04-29", "main_total": 3424.28, "alt_total": 2343.36}, {"date": "2026-04-30", "main_total": 3424.65, "alt_total": 2343.56}, {"date": "2026-05-01", "main_total": 3425.03, "alt_total": 2343.75}, {"date": "2026-05-02", "main_total": 3425.41, "alt_total": 2343.94}, {"date": "2026-05-03", "main_total": 3425.79, "alt_total": 2344.14}, {"date": "2026-05-04", "main_total": 3426.16, "alt_total": 2344.33}, {"date": "2026-05-05", "main_total": 3426.54, "alt_total": 2344.53}, {"date": "2026-05-06", "main_total": 3426.92, "alt_total": 2344.72}, {"date": "2026-05-07", "main_total": 3427.29, "alt_total": 2344.91}, {"date": "2026-05-08", "main_total": 3427.67, "alt_total": 2345.11}, {"date": "2026-05-09", "main_total": 3428.05, "alt_total": 2345.3}, {"date": "2026-05-10", "main_total": 3428.43, "alt_total": 2345.5}, {"date": "2026-05-11", "main_total": 3428.8, "alt_total": 2345.69}, {"date": "2026-05-12", "main_total": 3429.18, "alt_total": 2345.89}, {"date": "2026-05-13", "main_total": 3429.56, "alt_total": 2346.08}, {"date": "2026-05-14", "main_total": 3429.94, "alt_total": 2346.27}, {"date": "2026-05-15", "main_total": 3430.31, "alt_total": 2346.47}, {"date": "2026-05-16", "main_total": 3430.69, "alt_total": 2346.66}, {"date": "2026-05-17", "main_total": 3431.07, "alt_total": 2346.86}, {"date": "2026-05-18", "main_total": 3431.45, "alt_total": 2347.05}, {"date": "2026-05-19", "main_total": 3431.82, "alt_total": 2347.24}, {"date": "2026-05-20", "main_total": 3432.2, "alt_total": 2347.44}, {"date": "2026-05-21", "main_total": 3432.58, "alt_total": 2347.63}, {"date": "2026-05-22", "main_total": 3432.96, "alt_total": 2347.83}, {"date": "2026-05-23", "main_total": 3433.33, "alt_total": 2348.02}, {"date": "2026-05-24", "main_total": 3433.71, "alt_total": 2348.21}, {"date": "2026-05-25", "main_total": 3434.09, "alt_total": 2348.41}, {"date": "2026-05-26", "main_total": 3434.46, "alt_total": 2348.6}, {"date": "2026-05-27", "main_total": 3434.84, "alt_total": 2348.8}, {"date": "2026-05-28", "main_total": 3435.22, "alt_total": 2348.99}, {"date": "2026-05-29", "main_total": 3435.6, "alt_total": 2349.18}, {"date": "2026-05-30", "main_total": 3435.97, "alt_total": 2349.38}, {"date": "2026-05-31", "main_total": 3436.35, "alt_total": 2349.57}, {"date": "2026-06-01", "main_total": 3436.73, "alt_total": 2349.77}, {"date": "2026-06-02", "main_total": 3437.11, "alt_total": 2349.96}, {"date": "2026-06-03", "main_total": 3437.48, "alt_total": 2350.16}, {"date": "2026-06-04", "main_total": 3437.86, "alt_total": 2350.35}, {"date": "2026-06-05", "main_total": 3438.24, "alt_total": 2350.54}, {"date": "2026-06-06", "main_total": 3438.62, "alt_total": 2350.74}, {"date": "2026-06-07", "main_total": 3438.99, "alt_total": 2350.93}, {"date": "2026-06-08", "main_total": 3439.37, "alt_total": 2351.13}, {"date": "2026-06-09", "main_total": 3439.75, "alt_total": 2351.32}, {"date": "2026-06-10", "main_total": 3440.13, "alt_total": 2351.51}, {"date": "2026-06-11", "main_total": 3440.5, "alt_total": 2351.71}, {"date": "2026-06-12", "main_total": 3440.88, "alt_total": 2351.9}, {"date": "2026-06-13", "main_total": 3441.26, "alt_total": 2352.1}, {"date": "2026-06-14", "main_total": 3441.63, "alt_total": 2352.29}, {"date": "2026-06-15", "main_total": 3442.01, "alt_total": 2352.48}, {"date": "2026-06-16", "main_total": 3442.39, "alt_total": 2352.68}, {"date": "2026-06-17", "main_total": 3442.77, "alt_total": 2352.87}, {"date": "2026-06-18", "main_total": 3443.14, "alt_total": 2353.07}, {"date": "2026-06-19", "main_total": 3443.52, "alt_total": 2353.26}, {"date": "2026-06-20", "main_total": 3443.9, "alt_total": 2353.45}, {"date": "2026-06-21", "main_total": 3444.28, "alt_total": 2353.65}, {"date": "2026-06-22", "main_total": 3444.65, "alt_total": 2353.84}, {"date": "2026-06-23", "main_total": 3445.03, "alt_total": 2354.04}, {"date": "2026-06-24", "main_total": 3445.41, "alt_total": 2354.23}, {"date": "2026-06-25", "main_total": 3445.79, "alt_total": 2354.42}, {"date": "2026-06-26", "main_total": 3446.16, "alt_total": 2354.62}, {"date": "2026-06-27", "main_total": 3446.54, "alt_total": 2354.81}, {"date": "2026-06-28", "main_total": 3446.92, "alt_total": 2355.01}, {"date": "2026-06-29", "main_total": 3447.3, "alt_total": 2355.2}, {"date": "2026-06-30", "main_total": 3447.67, "alt_total": 2355.4}, {"date": "2026-07-01", "main_total": 3448.05, "alt_total": 2355.59}, {"date": "2026-07-02", "main_total": 3448.43, "alt_total": 2355.78}, {"date": "2026-07-03", "main_total": 3448.8, "alt_total": 2355.98}, {"date": "2026-07-04", "main_total": 3449.18, "alt_total": 2356.17}, {"date": "2026-07-05", "main_total": 3449.56, "alt_total": 2356.37}, {"date": "2026-07-06", "main_total": 3449.94, "alt_total": 2356.56}, {"date": "2026-07-07", "main_total": 3450.31, "alt_total": 2356.75}, {"date": "2026-07-08", "main_total": 3450.69, "alt_total": 2356.95}, {"date": "2026-07-09", "main_total": 3451.07, "alt_total": 2357.14}, {"date": "2026-07-10", "main_total": 3451.45, "alt_total": 2357.34}, {"date": "2026-07-11", "main_total": 3451.82, "alt_total": 2357.53}, {"date": "2026-07-12", "main_total": 3452.2, "alt_total": 2357.72}, {"date": "2026-07-13", "main_total": 3452.58, "alt_total": 2357.92}, {"date": "2026-07-14", "main_total": 3452.96, "alt_total": 2358.11}, {"date": "2026-07-15", "main_total": 3453.33, "alt_total": 2358.31}, {"date": "2026-07-16", "main_total": 3453.71, "alt_total": 2358.5}, {"date": "2026-07-17", "main_total": 3454.09, "alt_total": 2358.69}, {"date": "2026-07-18", "main_total": 3454.47, "alt_total": 2358.89}, {"date": "2026-07-19", "main_total": 3454.84, "alt_total": 2359.08}, {"date": "2026-07-20", "main_total": 3455.22, "alt_total": 2359.28}, {"date": "2026-07-21", "main_total": 3455.6, "alt_total": 2359.47}, {"date": "2026-07-22", "main_total": 3455.97, "alt_total": 2359.67}, {"date": "2026-07-23", "main_total": 3456.35, "alt_total": 2359.86}, {"date": "2026-07-24", "main_total": 3456.73, "alt_total": 2360.05}, {"date": "2026-07-25", "main_total": 3457.11, "alt_total": 2360.25}, {"date": "2026-07-26", "main_total": 3457.48, "alt_total": 2360.44}, {"date": "2026-07-27", "main_total": 3457.86, "alt_total": 2360.64}, {"date": "2026-07-28", "main_total": 3458.24, "alt_total": 2360.83}, {"date": "2026-07-29", "main_total": 3458.62, "alt_total": 2361.02}, {"date": "2026-07-30", "main_total": 3458.99, "alt_total": 2361.22}, {"date": "2026-07-31", "main_total": 3459.37, "alt_total": 2361.41}, {"date": "2026-08-01", "main_total": 3459.75, "alt_total": 2361.61}, {"date": "2026-08-02", "main_total": 3460.13, "alt_total": 2361.8}, {"date": "2026-08-03", "main_total": 3460.5, "alt_total": 2361.99}, {"date": "2026-08-04", "main_total": 3460.88, "alt_total": 2362.19}, {"date": "2026-08-05", "main_total": 3461.26, "alt_total": 2362.38}, {"date": "2026-08-06", "main_total": 3461.64, "alt_total": 2362.58}, {"date": "2026-08-07", "main_total": 3462.01, "alt_total": 2362.77}, {"date": "2026-08-08", "main_total": 3462.39, "alt_total": 2362.96}, {"date": "2026-08-09", "main_total": 3462.77, "alt_total": 2363.16}, {"date": "2026-08-10", "main_total": 3463.14, "alt_total": 2363.35}, {"date": "2026-08-11", "main_total": 3463.52, "alt_total": 2363.55}, {"date": "2026-08-12", "main_total": 3463.9, "alt_total": 2363.74}, {"date": "2026-08-13", "main_total": 3464.28, "alt_total": 2363.93}, {"date": "2026-08-14", "main_total": 3464.65, "alt_total": 2364.13}, {"date": "2026-08-15", "main_total": 3465.03, "alt_total": 2364.32}, {"date": "2026-08-16", "main_total": 3465.41, "alt_total": 2364.52}, {"date": "2026-08-17", "main_total": 3465.79, "alt_total": 2364.71}, {"date": "2026-08-18", "main_total": 2600.35, "alt_total": 1809.0}, {"date": "2026-08-19", "main_total": 3151.0, "alt_total": 2068.0}];
         const ctx = document.getElementById('priceChart').getContext('2d');
+        
         let priceChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labelsYear,
+                labels: rawHistory.map(i => i.date).slice(-30),
                 datasets: [{
-                    label: 'Main-Build (€)',
-                    data: dataMainYear,
+                    label: 'High-End System',
+                    data: rawHistory.map(i => i.main_total).slice(-30),
                     borderColor: '#0a84ff',
-                    backgroundColor: 'rgba(10, 132, 255, 0.15)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 0,
-                    pointHoverRadius: 6
-                },
-                {
-                    label: 'Alternative (€)',
-                    data: dataAltYear,
+                    backgroundColor: 'rgba(10, 132, 255, 0.1)',
+                    borderWidth: 2, tension: 0.4, fill: true, pointRadius: 0, pointHoverRadius: 6
+                }, {
+                    label: 'P/L-Sieger',
+                    data: rawHistory.map(i => i.alt_total).slice(-30),
                     borderColor: '#30d158',
-                    backgroundColor: 'rgba(48, 209, 88, 0.15)',
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 0,
-                    pointHoverRadius: 6
+                    backgroundColor: 'rgba(48, 209, 88, 0.1)',
+                    borderWidth: 2, tension: 0.4, fill: true, pointRadius: 0, pointHoverRadius: 6
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index',
-                },
-                plugins: {
-                    legend: { labels: { color: '#f5f5f7', font: { family: '-apple-system', size: 12, weight: '500' } } },
-                    tooltip: { backgroundColor: '#1f1f22', titleColor: '#8e8e93', bodyColor: '#f5f5f7', padding: 12, cornerRadius: 8 }
-                },
+                responsive: true, maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: { legend: { labels: { color: '#f5f5f7' } } },
                 scales: {
-                    y: { ticks: { color: '#8e8e93', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                    x: { ticks: { color: '#8e8e93', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    y: { ticks: { color: '#8e8e93' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { ticks: { color: '#8e8e93', maxTicksLimit: 7 }, grid: { display: false } }
                 }
             }
         });
-
-        function updateChartRange(range, btn) {
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            let sliceCount = rawHistory.length;
-            if (range === 'month') sliceCount = 30;
-            else if (range === 'week') sliceCount = 7;
-
-            const sliced = rawHistory.slice(-sliceCount);
-            priceChart.data.labels = sliced.map(item => item.date);
-            priceChart.data.datasets[0].data = sliced.map(item => item.main_total);
-            priceChart.data.datasets[1].data = sliced.map(item => item.alt_total);
-            priceChart.update();
-        }
-
+        
         function toggleAlt(id) {
             const box = document.getElementById('alt-box-' + id);
             if (box.style.display === 'block') {
