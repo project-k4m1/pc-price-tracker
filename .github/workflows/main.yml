@@ -6,9 +6,9 @@ on:
   workflow_dispatch:      # Erlaubt den manuellen Start
 
 permissions:
-  contents: write         # Erlaubt das Speichern von Preisen im Code (History)
-  pages: write            # Erlaubt das Veröffentlichen der Webseite
-  id-token: write         # Moderne, sichere Authentifizierung für GitHub Pages
+  contents: write
+  pages: write
+  id-token: write
 
 jobs:
   run-tracker:
