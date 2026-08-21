@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Workstation Preis-Tracker & Markt-Radar</title>
+    <title>Workstation Preis-Tracker & KI-Radar</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -15,17 +15,12 @@
             --text-muted: #94a3b8;
             --accent: #38bdf8;
             --green: #34d399;
+            --purple: #a78bfa;
             --amber: #fbbf24;
-            --red: #f87171;
             --radius: 14px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 20px 12px;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 20px 12px; }
         .container { max-width: 1050px; margin: auto; }
         header { text-align: center; margin-bottom: 24px; }
         h1 { color: var(--accent); font-size: 1.7rem; margin-bottom: 6px; }
@@ -33,69 +28,32 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 14px;
             margin-bottom: 20px;
         }
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px;
-            border-left: 4px solid var(--accent);
-        }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; border-left: 4px solid var(--accent); }
+        .stat-card.mid { border-left-color: var(--purple); }
         .stat-card.green { border-left-color: var(--green); }
-        .stat-card.amber { border-left-color: var(--amber); }
         .stat-title { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
         .stat-value { font-size: 1.5rem; font-weight: 700; margin-top: 5px; }
         .stat-desc { font-size: 0.8rem; margin-top: 4px; color: var(--text-muted); }
 
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
         h2 { font-size: 1.15rem; color: #e2e8f0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-        .ai-box {
-            background: var(--surface-2);
-            border-left: 4px solid var(--accent);
-            padding: 14px;
-            border-radius: 8px;
-            line-height: 1.5;
-            font-size: 0.95rem;
-            margin-top: 10px;
-        }
-        .deal-box {
-            background: rgba(251, 191, 36, 0.08);
-            border-left: 4px solid var(--amber);
-            padding: 14px;
-            border-radius: 8px;
-            line-height: 1.5;
-            font-size: 0.95rem;
-            margin-top: 10px;
-        }
+        .ai-box { background: var(--surface-2); border-left: 4px solid var(--accent); padding: 14px; border-radius: 8px; line-height: 1.5; font-size: 0.95rem; margin-top: 10px; }
+        .deal-box { background: rgba(251, 191, 36, 0.08); border-left: 4px solid var(--amber); padding: 14px; border-radius: 8px; line-height: 1.5; font-size: 0.95rem; margin-top: 10px; }
 
         .table-wrapper { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; }
         table { width: 100%; border-collapse: collapse; text-align: left; min-width: 580px; }
         th, td { padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
         th { background: var(--surface-2); color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; }
-        tr.clickable { cursor: pointer; transition: background 0.15s; }
-        tr.clickable:hover { background: rgba(56, 189, 248, 0.06); }
 
         .badge { background: #0369a1; color: #fff; padding: 3px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-        .badge.green { background: #047857; }
         .badge-bundle { background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; margin-left: 6px; }
         a.shop-link { color: var(--accent); text-decoration: none; font-weight: 600; }
         a.shop-link:hover { text-decoration: underline; }
-
-        .alt-drawer { display: none; background: #0b1120; padding: 12px 14px; border-left: 3px solid #818cf8; margin: 4px 0; border-radius: 6px; }
-        .alt-item { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.82rem; border-bottom: 1px dashed rgba(255,255,255,0.08); }
-        .alt-item:last-child { border-bottom: none; }
-        .delta-save { color: var(--green); font-weight: bold; }
-        .delta-more { color: var(--red); font-weight: bold; }
 
         .total-row { text-align: right; margin-top: 12px; font-size: 1.1rem; font-weight: 700; }
         canvas { max-height: 270px; width: 100% !important; }
@@ -105,24 +63,24 @@
     <div class="container">
         <header>
             <h1>🖥️ Workstation Preis-Tracker & KI-Radar</h1>
-            <div class="meta">Zuletzt synchronisiert: 21.08.2026 um 17:30 Uhr | EUR/USD: 1.1682</div>
+            <div class="meta">Zuletzt synchronisiert: 21.08.2026 um 21:00 Uhr | EUR/USD: 1.1682</div>
         </header>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-title">⭐ High-End Showcase Build</div>
-                <div class="stat-value">3667.41 €</div>
-                <div class="stat-desc">11x Lian Li Fans, HAVN HS420, 9950X3D</div>
+                <div class="stat-title">⭐ High-End Main-Build</div>
+                <div class="stat-value">3602.35 €</div>
+                <div class="stat-desc">HAVN HS420, 9950X3D, RTX 5070 Ti</div>
+            </div>
+            <div class="stat-card mid">
+                <div class="stat-title">💡 Studio Sweet-Spot</div>
+                <div class="stat-value">2673.00 €</div>
+                <div class="stat-desc">Fractal North XL, 7900X, RTX 5070 Ti</div>
             </div>
             <div class="stat-card green">
-                <div class="stat-title">💡 Auto P/L-Alternative</div>
-                <div class="stat-value">1979.00 €</div>
-                <div class="stat-desc">Günstigste kompatible Konfiguration</div>
-            </div>
-            <div class="stat-card amber">
-                <div class="stat-title">💰 Maximale Ersparnis</div>
-                <div class="stat-value">-1688.41 €</div>
-                <div class="stat-desc">(-46.0% im Vergleich)</div>
+                <div class="stat-title">📉 P/L-Sieger Build</div>
+                <div class="stat-value">2074.00 €</div>
+                <div class="stat-desc">Optimierte Budget-Komponenten</div>
             </div>
         </div>
 
@@ -133,8 +91,8 @@
                 Live-News Ticker (Direkt-Feed):<br>• Hardware-Preise im Großhandel stabil. Keine extremen Deal-Drops registriert.
             </div>
             <div class="ai-box">
-                <strong>🧠 Experten-Empfehlung (Claude 3.5 Sonnet):</strong><br><br>
-                Das High-End Setup bietet mit 3667.41 € maximale Performance für Render- und Audioworkflows. Wer 1688.41 € sparen möchte, greift zum P/L-Sieger (1979.00 €). Bei stabiler Marktlage kann aktuell bedenkenlos zugegriffen werden.
+                <strong>🧠 Experten-Empfehlung (Claude):</strong><br><br>
+                Das High-End Setup (3602.35 €) liefert maximale Leistung. Der Studio Sweet-Spot (2673.00 €) bietet die ideale Balance aus Optik und Budget, während der P/L-Sieger (2074.00 €) kompromisslos spart.
             </div>
         </div>
 
@@ -144,304 +102,203 @@
         </div>
 
         <div class="card">
-            <h2>⭐ Ultra-Premium Studio-Showcase (Main-Build)</h2>
-            <p style="font-size: 0.8rem; color: var(--text-muted);">💡 <em>Klicke auf eine Tabellenzeile, um Alternativen und Differenzen einzublenden.</em></p>
+            <h2>⭐ ⭐ High-End Showcase Main-Build</h2>
             <div class="table-wrapper">
                 <table>
                     <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr>
-                    <tr class="clickable" onclick="toggleAlt('m_cpu')">
-                        <td><span class="badge">Prozessor (CPU)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+9+9950X3D" target="_blank" class="shop-link">AMD Ryzen 9 9950X3D (16 Kerne / V-Cache)</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>720.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_cpu">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_cpu" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+7+7800X3D" target="_blank" class="shop-link">AMD Ryzen 7 7800X3D</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>389.00 €</span> <span class="delta-save">[-331.00 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+9+7900X" target="_blank" class="shop-link">AMD Ryzen 9 7900X</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>315.00 €</span> <span class="delta-save">[-405.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_ram')">
-                        <td><span class="badge">Arbeitsspeicher (RAM)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=ADATA+XPG+Lancer+Blade+48GB+6000" target="_blank" class="shop-link">ADATA XPG Lancer Blade RGB 48GB DDR5-6000 CL30</a></td>
-                        <td>Alternate / Caseking</td>
-                        <td><strong>375.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_ram">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_ram" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Crucial+Pro+48GB+DDR5" target="_blank" class="shop-link">Crucial Pro 48GB Kit DDR5-5600</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>165.00 €</span> <span class="delta-save">[-210.00 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Corsair+Vengeance+32GB+DDR5" target="_blank" class="shop-link">Corsair Vengeance 32GB DDR5-6000</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>110.00 €</span> <span class="delta-save">[-265.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_gpu')">
-                        <td><span class="badge">Grafikkarte (GPU)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=ASUS+TUF+Gaming+GeForce+RTX+5070+Ti" target="_blank" class="shop-link">ASUS TUF Gaming GeForce RTX 5070 Ti 16G OC</a></td>
-                        <td>Notebooksbilliger</td>
-                        <td><strong>1219.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_gpu">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_gpu" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+GAMING+TRIO+OC" target="_blank" class="shop-link">MSI GeForce RTX 5070 Ti 16G GAMING TRIO OC</a> <span style="color:var(--text-muted);">(Notebooksbilliger)</span></div>
-                                    <div><span>1248.99 €</span> <span class="delta-more">[+29.99 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+GeForce+RTX+5070+Ti+VENTUS+3X" target="_blank" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC</a> <span style="color:var(--text-muted);">(Notebooksbilliger)</span></div>
-                                    <div><span>1149.00 €</span> <span class="delta-save">[-70.00 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Gigabyte+GeForce+RTX+4070+Ti+SUPER" target="_blank" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Windforce OC</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>849.00 €</span> <span class="delta-save">[-370.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_mb')">
-                        <td><span class="badge">Mainboard</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+MAG+X870E+TOMAHAWK+WIFI" target="_blank" class="shop-link">MSI MAG X870E TOMAHAWK WIFI</a></td>
-                        <td>Notebooksbilliger</td>
-                        <td><strong>284.36 €</strong></td>
-                    </tr>
-                    <tr id="row-m_mb">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_mb" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=ASUS+ROG+Strix+X870-F" target="_blank" class="shop-link">ASUS ROG Strix X870-F Gaming WIFI</a> <span style="color:var(--text-muted);">(Alternate)</span></div>
-                                    <div><span>420.00 €</span> <span class="delta-more">[+135.64 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+B650+TOMAHAWK+WIFI" target="_blank" class="shop-link">MSI MAG B650 TOMAHAWK WIFI</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>180.00 €</span> <span class="delta-save">[-104.36 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_ssd')">
-                        <td><span class="badge">SSD (System)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Samsung+990+PRO+1TB" target="_blank" class="shop-link">Samsung 990 PRO 1TB NVMe M.2</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>199.05 €</strong></td>
-                    </tr>
-                    <tr id="row-m_ssd">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_ssd" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=WD_BLACK+SN850X+2TB" target="_blank" class="shop-link">WD_BLACK SN850X 2TB NVMe M.2</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>185.00 €</span> <span class="delta-save">[-14.05 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lexar+NM790+2TB" target="_blank" class="shop-link">Lexar NM790 2TB M.2 PCIe 4.0</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>140.00 €</span> <span class="delta-save">[-59.05 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_case')">
-                        <td><span class="badge">Gehäuse</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=HAVN+HS420+VGPU+Black" target="_blank" class="shop-link">HAVN HS420 VGPU Black (Panorama-Glas)</a></td>
-                        <td>Caseking</td>
-                        <td><strong>265.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_case">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_case" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Fractal+Design+North+XL+Charcoal+TG" target="_blank" class="shop-link">Fractal Design North XL Charcoal TG</a> <span style="color:var(--text-muted);">(Notebooksbilliger)</span></div>
-                                    <div><span>155.01 €</span> <span class="delta-save">[-109.99 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+O11+Vision+Compact" target="_blank" class="shop-link">Lian Li O11 Vision Compact</a> <span style="color:var(--text-muted);">(Caseking)</span></div>
-                                    <div><span>125.00 €</span> <span class="delta-save">[-140.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_aio')">
-                        <td><span class="badge">AiO-Wasserkühlung</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+HydroShift+LCD+360S" target="_blank" class="shop-link">Lian Li HydroShift LCD 360S Black</a></td>
-                        <td>Notebooksbilliger</td>
-                        <td><strong>180.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_aio">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_aio" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=NZXT+Kraken+Elite+360+RGB" target="_blank" class="shop-link">NZXT Kraken Elite 360 RGB</a> <span style="color:var(--text-muted);">(Notebooksbilliger)</span></div>
-                                    <div><span>279.59 €</span> <span class="delta-more">[+99.59 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Arctic+Liquid+Freezer+III+360" target="_blank" class="shop-link">Arctic Liquid Freezer III 360</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>75.00 €</span> <span class="delta-save">[-105.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_fans_lcd')">
-                        <td><span class="badge">Lüfter (Seite/Displays)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+UNI+FAN+TL+LCD+120+Reverse" target="_blank" class="shop-link">Lian Li UNI FAN TL LCD 120 Reverse (3er)</a></td>
-                        <td>Caseking</td>
-                        <td><strong>145.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_fans_lcd">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_fans_lcd" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+UNI+FAN+SL-INF+120+Reverse" target="_blank" class="shop-link">Lian Li UNI FAN SL-INF 120 Reverse (3er)</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>95.00 €</span> <span class="delta-save">[-50.00 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Arctic+P12+PWM+PST" target="_blank" class="shop-link">Arctic P12 PWM PST A-RGB (3er)</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>35.00 €</span> <span class="delta-save">[-110.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_fans_inf')">
-                        <td><span class="badge">Lüfter (Boden/Infinity)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+UNI+FAN+SL-INF+Wireless+Reverse" target="_blank" class="shop-link">Lian Li UNI FAN SL-INF Wireless Reverse (3er)</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>95.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_fans_inf">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_fans_inf" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Arctic+P14+PWM+PST+5er" target="_blank" class="shop-link">Arctic P14 PWM PST (5er Pack)</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>35.00 €</span> <span class="delta-save">[-60.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr class="clickable" onclick="toggleAlt('m_psu')">
-                        <td><span class="badge">Netzteil</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=be+quiet!+Straight+Power+12+1000W" target="_blank" class="shop-link">be quiet! Straight Power 12 1000W ATX 3.0</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>185.00 €</strong></td>
-                    </tr>
-                    <tr id="row-m_psu">
-                        <td colspan="4" style="padding:0; border:none;">
-                            <div id="box-m_psu" class="alt-drawer">
-                                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; margin-bottom:6px;">🔄 VERFÜGBARE ALTERNATIVEN:</div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=be+quiet!+Straight+Power+12+850W" target="_blank" class="shop-link">be quiet! Straight Power 12 850W ATX 3.0</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>160.00 €</span> <span class="delta-save">[-25.00 €]</span></div>
-                                </div>
-                                <div class="alt-item">
-                                    <div><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Corsair+RM850e+850W" target="_blank" class="shop-link">Corsair RM850e 850W ATX 3.0</a> <span style="color:var(--text-muted);">(Mindfactory)</span></div>
-                                    <div><span>115.00 €</span> <span class="delta-save">[-70.00 €]</span></div>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
+                    
+                <tr>
+                    <td><span class="badge">Prozessor (CPU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=AMD+Ryzen+9+9950X3D" target="_blank" class="shop-link">AMD Ryzen 9 9950X3D (V-Cache)</a><span class="badge-bundle">BUNDLE</span></td>
+                    <td>Caseking Bundle</td>
+                    <td><strong>699.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Arbeitsspeicher (RAM)</span></td>
+                    <td><a href="https://geizhals.de/?fs=ADATA+XPG+Lancer+Blade+48GB+DDR5-6000" target="_blank" class="shop-link">ADATA XPG Lancer Blade RGB 48GB DDR5-6000</a><span class="badge-bundle">BUNDLE</span></td>
+                    <td>Caseking Bundle</td>
+                    <td><strong>396.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Grafikkarte (GPU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+GAMING+TRIO+OC" target="_blank" class="shop-link">MSI GeForce RTX 5070 Ti 16G GAMING TRIO OC</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>1248.99 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Mainboard</span></td>
+                    <td><a href="https://geizhals.de/?fs=MSI+MAG+X870E+TOMAHAWK+WIFI" target="_blank" class="shop-link">MSI MAG X870E TOMAHAWK WIFI</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>284.36 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Festplatte (SSD)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Samsung+990+PRO+1TB" target="_blank" class="shop-link">Samsung 990 PRO 1TB NVMe M.2</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>219.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Gehäuse</span></td>
+                    <td><a href="https://geizhals.de/?fs=HAVN+HS420+VGPU+Black" target="_blank" class="shop-link">HAVN HS420 VGPU Black (Panorama-Glas)</a></td>
+                    <td>Caseking</td>
+                    <td><strong>265.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Kühlung (AiO)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Lian+Li+HydroShift+LCD+360S" target="_blank" class="shop-link">Lian Li HydroShift LCD 360S Black</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>180.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Netzteil (PSU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=be+quiet!+Straight+Power+12+1000W" target="_blank" class="shop-link">be quiet! Straight Power 12 1000W ATX 3.0</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>185.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Gehäuselüfter</span></td>
+                    <td><a href="https://geizhals.de/?fs=Lian+Li+UNI+FAN+SL-INF+Wireless" target="_blank" class="shop-link">Lian Li UNI FAN SL-INF Wireless (3er + 1)</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>125.00 €</strong></td>
+                </tr>
                 </table>
             </div>
-            <div class="total-row">Gesamtsumme Main-Build: <span style="color:var(--accent);">3667.41 €</span></div>
+            <div class="total-row">Gesamtsumme Main-Build: <span style="color:var(--accent);">3602.35 €</span></div>
         </div>
 
         <div class="card">
-            <h2>💡 Preis-Leistungs-Sieger (Günstigste Alternative)</h2>
+            <h2>💡 💡 Studio Sweet-Spot (Mid-Tier)</h2>
             <div class="table-wrapper">
                 <table>
-                    <tr><th>Kategorie</th><th>Günstigste Komponente</th><th>Shop</th><th>Preis</th></tr>
-                    <tr>
-                        <td><span class="badge green">Prozessor (CPU)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=AMD+Ryzen+9+7900X" target="_blank" class="shop-link">AMD Ryzen 9 7900X</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>315.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">Arbeitsspeicher (RAM)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Corsair+Vengeance+32GB+DDR5" target="_blank" class="shop-link">Corsair Vengeance 32GB DDR5-6000</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>110.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">Grafikkarte (GPU)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Gigabyte+GeForce+RTX+4070+Ti+SUPER" target="_blank" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Windforce OC</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>849.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">Mainboard</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=MSI+B650+TOMAHAWK+WIFI" target="_blank" class="shop-link">MSI MAG B650 TOMAHAWK WIFI</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>180.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">SSD (System)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lexar+NM790+2TB" target="_blank" class="shop-link">Lexar NM790 2TB M.2 PCIe 4.0</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>140.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">Gehäuse</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Lian+Li+O11+Vision+Compact" target="_blank" class="shop-link">Lian Li O11 Vision Compact</a></td>
-                        <td>Caseking</td>
-                        <td><strong>125.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">AiO-Wasserkühlung</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Arctic+Liquid+Freezer+III+360" target="_blank" class="shop-link">Arctic Liquid Freezer III 360</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>75.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">Lüfter (Seite/Displays)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Arctic+P12+PWM+PST" target="_blank" class="shop-link">Arctic P12 PWM PST A-RGB (3er)</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>35.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">Lüfter (Boden/Infinity)</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Arctic+P14+PWM+PST+5er" target="_blank" class="shop-link">Arctic P14 PWM PST (5er Pack)</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>35.00 €</strong></td>
-                    </tr>
-                    <tr>
-                        <td><span class="badge green">Netzteil</span></td>
-                        <td><a href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=Corsair+RM850e+850W" target="_blank" class="shop-link">Corsair RM850e 850W ATX 3.0</a></td>
-                        <td>Mindfactory</td>
-                        <td><strong>115.00 €</strong></td>
-                    </tr>
+                    <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr>
+                    
+                <tr>
+                    <td><span class="badge">Prozessor (CPU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=AMD+Ryzen+9+7900X" target="_blank" class="shop-link">AMD Ryzen 9 7900X (12 Kerne)</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>315.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Arbeitsspeicher (RAM)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600" target="_blank" class="shop-link">Crucial Pro 48GB Kit DDR5-5600</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>165.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Grafikkarte (GPU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=MSI+GeForce+RTX+5070+Ti+16G+VENTUS+3X+OC" target="_blank" class="shop-link">MSI GeForce RTX 5070 Ti 16G VENTUS 3X OC</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>1149.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Mainboard</span></td>
+                    <td><a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" class="shop-link">MSI MAG B650 TOMAHAWK WIFI</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>180.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Festplatte (SSD)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Samsung+990+PRO+1TB" target="_blank" class="shop-link">Samsung 990 PRO 1TB NVMe M.2</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>219.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Gehäuse</span></td>
+                    <td><a href="https://geizhals.de/?fs=Fractal+Design+North+XL+Dark+TG" target="_blank" class="shop-link">Fractal Design North XL Dark TG</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>180.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Kühlung (AiO)</span></td>
+                    <td><a href="https://geizhals.de/?fs=NZXT+Kraken+Elite+360+RGB" target="_blank" class="shop-link">NZXT Kraken Elite 360 RGB Schwarz</a></td>
+                    <td>Notebooksbilliger</td>
+                    <td><strong>280.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Netzteil (PSU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=be+quiet!+Straight+Power+12+850W" target="_blank" class="shop-link">be quiet! Straight Power 12 850W ATX 3.0</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>165.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Gehäuselüfter</span></td>
+                    <td><a href="https://geizhals.de/?fs=NZXT+F140+RGB+Core" target="_blank" class="shop-link">NZXT F140 RGB Core (140mm)</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>20.00 €</strong></td>
+                </tr>
                 </table>
             </div>
-            <div class="total-row">Gesamtsumme P/L-Alternative: <span style="color:var(--green);">1979.00 €</span></div>
+            <div class="total-row">Gesamtsumme Sweet-Spot: <span style="color:var(--purple);">2673.00 €</span></div>
+        </div>
+
+        <div class="card">
+            <h2>📉 📉 Preis-Leistungs-Sieger Build</h2>
+            <div class="table-wrapper">
+                <table>
+                    <tr><th>Kategorie</th><th>Komponente</th><th>Shop</th><th>Preis</th></tr>
+                    
+                <tr>
+                    <td><span class="badge">Prozessor (CPU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=AMD+Ryzen+7+7800X3D" target="_blank" class="shop-link">AMD Ryzen 7 7800X3D</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>390.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Arbeitsspeicher (RAM)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Crucial+Pro+48GB+DDR5-5600" target="_blank" class="shop-link">Crucial Pro 48GB Kit DDR5-5600</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>165.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Grafikkarte (GPU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Gigabyte+GeForce+RTX+4070+Ti+SUPER" target="_blank" class="shop-link">Gigabyte GeForce RTX 4070 Ti SUPER Windforce OC</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>849.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Mainboard</span></td>
+                    <td><a href="https://geizhals.de/?fs=MSI+MAG+B650+TOMAHAWK+WIFI" target="_blank" class="shop-link">MSI MAG B650 TOMAHAWK WIFI</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>180.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Festplatte (SSD)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Lexar+NM790+2TB" target="_blank" class="shop-link">Lexar NM790 2TB M.2 NVMe</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>140.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Gehäuse</span></td>
+                    <td><a href="https://geizhals.de/?fs=Lian+Li+O11+Vision+Compact" target="_blank" class="shop-link">Lian Li O11 Vision Compact</a></td>
+                    <td>Caseking</td>
+                    <td><strong>125.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Kühlung (AiO)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Arctic+Liquid+Freezer+III+360" target="_blank" class="shop-link">Arctic Liquid Freezer III 360</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>75.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Netzteil (PSU)</span></td>
+                    <td><a href="https://geizhals.de/?fs=Corsair+RM850e+850W" target="_blank" class="shop-link">Corsair RM850e 850W ATX 3.0</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>115.00 €</strong></td>
+                </tr>
+                <tr>
+                    <td><span class="badge">Gehäuselüfter</span></td>
+                    <td><a href="https://geizhals.de/?fs=Arctic+P14+PWM+PST+5er" target="_blank" class="shop-link">Arctic P14 PWM PST (5er Pack)</a></td>
+                    <td>Mindfactory</td>
+                    <td><strong>35.00 €</strong></td>
+                </tr>
+                </table>
+            </div>
+            <div class="total-row">Gesamtsumme P/L-Sieger: <span style="color:var(--green);">2074.00 €</span></div>
         </div>
     </div>
 
     <script>
-        function toggleAlt(id) {
-            const el = document.getElementById('box-' + id);
-            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-        }
-
-        const rawData = [{"date": "23.07.", "main_total": 3849.83, "alt_total": 2057.54}, {"date": "24.07.", "main_total": 3848.09, "alt_total": 2056.4}, {"date": "25.07.", "main_total": 3845.84, "alt_total": 2054.92}, {"date": "26.07.", "main_total": 3843.17, "alt_total": 2053.17}, {"date": "27.07.", "main_total": 3840.15, "alt_total": 2051.19}, {"date": "28.07.", "main_total": 3836.81, "alt_total": 2049.0}, {"date": "29.07.", "main_total": 3833.17, "alt_total": 2046.62}, {"date": "30.07.", "main_total": 3829.26, "alt_total": 2044.06}, {"date": "31.07.", "main_total": 3825.11, "alt_total": 2041.33}, {"date": "01.08.", "main_total": 3820.71, "alt_total": 2038.45}, {"date": "02.08.", "main_total": 3785.61, "alt_total": 2040.08}, {"date": "03.08.", "main_total": 3780.77, "alt_total": 2036.91}, {"date": "04.08.", "main_total": 3775.73, "alt_total": 2033.61}, {"date": "05.08.", "main_total": 3731.44, "alt_total": 2044.54}, {"date": "06.08.", "main_total": 3726.01, "alt_total": 2040.98}, {"date": "07.08.", "main_total": 3708.15, "alt_total": 2028.5}, {"date": "08.08.", "main_total": 3702.36, "alt_total": 2024.71}, {"date": "09.08.", "main_total": 3696.39, "alt_total": 2020.8}, {"date": "10.08.", "main_total": 3690.26, "alt_total": 2016.77}, {"date": "11.08.", "main_total": 3683.96, "alt_total": 2012.65}, {"date": "12.08.", "main_total": 3677.5, "alt_total": 2008.41}, {"date": "13.08.", "main_total": 3670.89, "alt_total": 2004.08}, {"date": "14.08.", "main_total": 3664.12, "alt_total": 1999.64}, {"date": "15.08.", "main_total": 3657.21, "alt_total": 1995.11}, {"date": "16.08.", "main_total": 3650.15, "alt_total": 1990.48}, {"date": "17.08.", "main_total": 3642.95, "alt_total": 1985.76}, {"date": "18.08.", "main_total": 3635.6, "alt_total": 1980.95}, {"date": "19.08.", "main_total": 3644.86, "alt_total": 1967.61}, {"date": "20.08.", "main_total": 3667.41, "alt_total": 1979.0}, {"date": "21.08.", "main_total": 3667.4100000000003, "alt_total": 1979.0}];
+        const rawData = [{"date": "23.07.", "main_total": 3849.83, "alt_total": 2057.54}, {"date": "24.07.", "main_total": 3848.09, "alt_total": 2056.4}, {"date": "25.07.", "main_total": 3845.84, "alt_total": 2054.92}, {"date": "26.07.", "main_total": 3843.17, "alt_total": 2053.17}, {"date": "27.07.", "main_total": 3840.15, "alt_total": 2051.19}, {"date": "28.07.", "main_total": 3836.81, "alt_total": 2049.0}, {"date": "29.07.", "main_total": 3833.17, "alt_total": 2046.62}, {"date": "30.07.", "main_total": 3829.26, "alt_total": 2044.06}, {"date": "31.07.", "main_total": 3825.11, "alt_total": 2041.33}, {"date": "01.08.", "main_total": 3820.71, "alt_total": 2038.45}, {"date": "02.08.", "main_total": 3785.61, "alt_total": 2040.08}, {"date": "03.08.", "main_total": 3780.77, "alt_total": 2036.91}, {"date": "04.08.", "main_total": 3775.73, "alt_total": 2033.61}, {"date": "05.08.", "main_total": 3731.44, "alt_total": 2044.54}, {"date": "06.08.", "main_total": 3726.01, "alt_total": 2040.98}, {"date": "07.08.", "main_total": 3708.15, "alt_total": 2028.5}, {"date": "08.08.", "main_total": 3702.36, "alt_total": 2024.71}, {"date": "09.08.", "main_total": 3696.39, "alt_total": 2020.8}, {"date": "10.08.", "main_total": 3690.26, "alt_total": 2016.77}, {"date": "11.08.", "main_total": 3683.96, "alt_total": 2012.65}, {"date": "12.08.", "main_total": 3677.5, "alt_total": 2008.41}, {"date": "13.08.", "main_total": 3670.89, "alt_total": 2004.08}, {"date": "14.08.", "main_total": 3664.12, "alt_total": 1999.64}, {"date": "15.08.", "main_total": 3657.21, "alt_total": 1995.11}, {"date": "16.08.", "main_total": 3650.15, "alt_total": 1990.48}, {"date": "17.08.", "main_total": 3642.95, "alt_total": 1985.76}, {"date": "18.08.", "main_total": 3635.6, "alt_total": 1980.95}, {"date": "19.08.", "main_total": 3644.86, "alt_total": 1967.61}, {"date": "20.08.", "main_total": 3667.41, "alt_total": 1979.0}, {"date": "21.08.", "main_total": 3602.35, "mid_total": 2673.0, "alt_total": 2074.0}];
         const ctx = document.getElementById('priceChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -449,22 +306,25 @@
                 labels: rawData.map(i => i.date),
                 datasets: [
                     {
-                        label: 'Showcase Main-Build (€)',
+                        label: 'High-End Main-Build (€)',
                         data: rawData.map(i => i.main_total),
                         borderColor: '#38bdf8',
                         backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                        tension: 0.2,
-                        pointRadius: 2,
-                        fill: true
+                        tension: 0.2, pointRadius: 2, fill: true
                     },
                     {
-                        label: 'Auto P/L-Alternative (€)',
+                        label: 'Studio Sweet-Spot (€)',
+                        data: rawData.map(i => i.mid_total),
+                        borderColor: '#a78bfa',
+                        backgroundColor: 'rgba(167, 139, 250, 0.05)',
+                        tension: 0.2, pointRadius: 2, fill: true
+                    },
+                    {
+                        label: 'P/L-Sieger Build (€)',
                         data: rawData.map(i => i.alt_total),
                         borderColor: '#34d399',
                         backgroundColor: 'rgba(52, 211, 153, 0.05)',
-                        tension: 0.2,
-                        pointRadius: 2,
-                        fill: true
+                        tension: 0.2, pointRadius: 2, fill: true
                     }
                 ]
             },
