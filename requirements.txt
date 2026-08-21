@@ -2,3 +2,5 @@ google-genai
 anthropic
 requests
 feedparser
+curl_cffi
+beautifulsoup4
