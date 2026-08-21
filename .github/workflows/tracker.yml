@@ -2,13 +2,13 @@ name: PC Preis-Tracker & Dashboard
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # Läuft täglich um 08:00 Uhr UTC (ca. 10 Uhr in Deutschland)
-  workflow_dispatch:     # Manueller Start-Button
+    - cron: '0 8 * * *'  # Läuft täglich um 08:00 Uhr UTC (ca. 10 Uhr Sommerzeit)
+  workflow_dispatch:     # Erlaubt den manuellen Start über den Button
 
 permissions:
-  contents: write        # Erlaubt das Speichern der History (history.json)
-  pages: write           # Erlaubt das Deployen auf GitHub Pages
-  id-token: write        # Nötig für das sichere Pages-Deployment
+  contents: write        # Erlaubt das Speichern von Preisen und History
+  pages: write           # Erlaubt das Veröffentlichen der Webseite
+  id-token: write        # Sichere Authentifizierung für GitHub Pages
 
 jobs:
   run-tracker:
@@ -61,3 +61,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
