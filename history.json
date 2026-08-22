@@ -1,11 +1,5 @@
 [
     {
-        "date": "23.07.",
-        "main_total": 3693.35,
-        "mid_total": 2737.61,
-        "alt_total": 2155.47
-    },
-    {
         "date": "24.07.",
         "main_total": 3660.33,
         "mid_total": 2728.12,
@@ -175,6 +169,12 @@
     },
     {
         "date": "21.08.",
+        "main_total": 3552.4100000000003,
+        "mid_total": 2632.65,
+        "alt_total": 2073.0
+    },
+    {
+        "date": "22.08.",
         "main_total": 3552.4100000000003,
         "mid_total": 2632.65,
         "alt_total": 2073.0
